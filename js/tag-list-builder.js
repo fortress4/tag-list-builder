@@ -253,7 +253,7 @@ function tb_renderTag(field,container,tagText) {  // ,sortTags,tagColor
    var tagTextID = tagText.replace(regex, "-");
    var tagID = fldID + '_' + tagTextID;
    var tagClassList = '';
-   var titleAttr = ' title="Tag: ' + tagText + '"';
+   var titleText = 'Tag: ' + tagText;
 
    // var tagCase = field.data('tagcase');
    // tbConfig[fldID].tagCase = field.data('tagcase');
@@ -282,7 +282,7 @@ function tb_renderTag(field,container,tagText) {  // ,sortTags,tagColor
    if ( tbConfig[fldID].tagSorting == 1 )
    {
       tagClassList = ' dragTag';
-      titleAttr = ' title="Drag to sort tag: ' + tagText + '"';
+      titleText = 'Drag to sort tag: ' + tagText;
    }
 
    if ( tbConfig[fldID].tagClass !== '' )
@@ -291,7 +291,19 @@ function tb_renderTag(field,container,tagText) {  // ,sortTags,tagColor
    // else
    //   tagClass = tagClass + ' bg-primary'
 
-   container.append('<span id="'+tagID+'" class="tagBuilderTag badge rounded-pill p-2 me-2 mb-1'+tagClassList+'" '+titleAttr+'>' + tagText + '<i class="removeTag fa-regular fa-circle-xmark ms-2" title="Click X to remove tag: ' + tagText + '"></i></span>');
+   var tagNode = $('<span></span>', {
+      id: tagID,
+      'class': 'tagBuilderTag badge rounded-pill p-2 me-2 mb-1' + tagClassList,
+      title: titleText
+   }).text(tagText);
+
+   var removeIcon = $('<i></i>', {
+      'class': 'removeTag fa-regular fa-circle-xmark ms-2',
+      title: 'Click X to remove tag: ' + tagText
+   });
+
+   tagNode.append(removeIcon);
+   container.append(tagNode);
 
    if ( tbConfig[fldID].tagSorting == 1 )
       sortable(container); // Refresh the Sortable Container

@@ -257,15 +257,27 @@ function tb_renderTag(field,container,tagText,sortTags) {
    var tagTextID = tagText.replace(regex, "-");
    var tagID = fieldID + '_' + tagTextID;
    var tagClass = '';
-   var titleAttr = ' title="Tag: ' + tagText + '"';
+   var titleText = 'Tag: ' + tagText;
 
    if ( sortTags == 1 )
    {
       tagClass = ' dragTag';
-      titleAttr = ' title="Drag to sort tag: ' + tagText + '"';
+      titleText = 'Drag to sort tag: ' + tagText;
    }
 
-   container.append('<span id="'+tagID+'" class="tagBuilderTag badge rounded-pill bg-primary p-2 me-2 mb-1'+tagClass+'" '+titleAttr+'>' + tagText + '<i class="removeTag fa-regular fa-circle-xmark ms-2" title="Click X to remove tag: ' + tagText + '"></i></span>');
+   var tagNode = $('<span></span>', {
+      id: tagID,
+      'class': 'tagBuilderTag badge rounded-pill bg-primary p-2 me-2 mb-1' + tagClass,
+      title: titleText
+   }).text(tagText);
+
+   var removeIcon = $('<i></i>', {
+      'class': 'removeTag fa-regular fa-circle-xmark ms-2',
+      title: 'Click X to remove tag: ' + tagText
+   });
+
+   tagNode.append(removeIcon);
+   container.append(tagNode);
 
    if ( sortTags == 1)
       sortable(container); // Refresh the Sortable Container
