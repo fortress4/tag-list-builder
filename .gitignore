@@ -2,3 +2,24 @@
 /utils/_make-static.cfm
 
 /_notes/sessions/
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.cfconfig.json
+
+# CommandBox and local ColdFusion runtime files
+/.commandbox/
+/WEB-INF/
+*.log
+
+# Temporary and editor backup files
+*.tmp
+*.bak
+*~
