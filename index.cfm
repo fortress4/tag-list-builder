@@ -87,8 +87,14 @@
                      };
                      //useLowerCaseTags = false,
                      //WriteDump(var=fieldArgs,expand=false);
-                  </cfscript>
-                  <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   </cfscript>
+                   <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   <div id="exampleOne_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                      <span class="text-muted">Last event:</span>
+                      <span class="badge bg-secondary" data-event-name>Waiting</span>
+                      <span class="ms-2 text-muted" data-event-count>0 events</span>
+                      <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                   </div>
                   <!---<div class="tagBuilderWrapper">
                      <label class="tagBuilderFieldLabel"></label>
                      <input type="text" id="exampleOne_add" name="exampleOne_add" class="tagBuilderAdd form-control-sm " placeholder="Add a Tag">
@@ -139,8 +145,14 @@
                      };
                      //useLowerCaseTags = false,
                      //WriteDump(var=fieldArgs,expand=false);
-                  </cfscript>
-                  <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   </cfscript>
+                   <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   <div id="exampleTwo_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                      <span class="text-muted">Last event:</span>
+                      <span class="badge bg-secondary" data-event-name>Waiting</span>
+                      <span class="ms-2 text-muted" data-event-count>0 events</span>
+                      <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                   </div>
                   <!---<div class="tagBuilderWrapper">
                      <label class="tagBuilderFieldLabel"></label>
                      <input type="text" id="exampleTwo_add" name="exampleTwo_add" class="tagBuilderAdd form-control-sm " placeholder="Add a Tag">
@@ -195,8 +207,14 @@
                      };
                      //useLowerCaseTags = false,
                      //WriteDump(var=fieldArgs,expand=false);
-                  </cfscript>
-                  <cfoutput>#controlsCFC.renderTagListTypeAheadInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   </cfscript>
+                   <cfoutput>#controlsCFC.renderTagListTypeAheadInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   <div id="exampleThree_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                      <span class="text-muted">Last event:</span>
+                      <span class="badge bg-secondary" data-event-name>Waiting</span>
+                      <span class="ms-2 text-muted" data-event-count>0 events</span>
+                      <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                   </div>
                   <!--- End: TagBuilder Field and Bin --->
 
                </div>
@@ -231,13 +249,67 @@
                         showHiddenButton = true,
                         outputConfig = true   // TODO add to controls
                      };
-                  </cfscript>
-                  <cfoutput>#controlsCFC.renderTagListTypeAheadInputField(argumentCollection=fieldArgs)#</cfoutput>
-                  <!--- End: TagBuilder Field and Bin --->
+                   </cfscript>
+                   <cfoutput>#controlsCFC.renderTagListTypeAheadInputField(argumentCollection=fieldArgs)#</cfoutput>
+                   <div id="exampleFour_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                      <span class="text-muted">Last event:</span>
+                      <span class="badge bg-secondary" data-event-name>Waiting</span>
+                      <span class="ms-2 text-muted" data-event-count>0 events</span>
+                      <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                   </div>
+                   <!--- End: TagBuilder Field and Bin --->
 
             </div>
-
          </div>
+      </div>
+
+      <!--- // ROW 3 --->
+       <div class="row">
+          <div class="col-12">
+             <div class="card border border-2 rounded-3 m-2 p-4">
+                <div class="card-body">
+                   <h5 class="card-title">JavaScript-loaded Values and Events</h5>
+                   <p class="card-text text-muted">
+                      This field starts empty. Its initial tags are added with <code>tagBuilder('set', values)</code>
+                      after initialization, and the indicator shows each public event as it fires.
+                   </p>
+
+                   <cfscript>
+                      fieldArgs = {
+                         fieldName = "exampleFive",
+                         fieldLabel = "JavaScript API Example",
+                         required = false,
+                         readonly = false,
+                         placeholder = "Add a Tag",
+                         fieldValue = "",
+                         enableTagSorting = true,
+                         tagCase = "",
+                         tagClass = "bg-dark",
+                         tagHoverClass = "bg-warning",
+                         addFieldClass = "",
+                         messageText = "Values will be loaded by JavaScript",
+                         showHiddenButton = true,
+                         outputConfig = true
+                      };
+                   </cfscript>
+                   <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+
+                   <div id="exampleFive_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                      <span class="text-muted">Last event:</span>
+                      <span class="badge bg-secondary" data-event-name>Waiting</span>
+                      <span class="ms-2 text-muted" data-event-count>0 events</span>
+                      <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                   </div>
+
+                   <div class="d-flex flex-wrap gap-2 mt-3" aria-label="JavaScript tag builder examples">
+                      <button type="button" class="btn btn-primary btn-sm" data-example-five-action="set">Set example values</button>
+                      <button type="button" class="btn btn-success btn-sm" data-example-five-action="add">Add a value</button>
+                      <button type="button" class="btn btn-outline-primary btn-sm" data-example-five-action="refresh">Refresh saved values</button>
+                      <button type="button" class="btn btn-outline-danger btn-sm" data-example-five-action="clear">Clear values</button>
+                   </div>
+                </div>
+             </div>
+          </div>
       </div>
 
       <!---<div class="row marketing">
@@ -272,6 +344,79 @@
 
     <script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <script>
+      (function() {
+         var eventNames = ['init', 'update', 'add', 'remove', 'sort', 'reject', 'error'];
+         var eventCounts = Object.create(null);
+         var eventBadgeClasses = {
+            init: 'bg-info text-dark',
+            update: 'bg-primary',
+            add: 'bg-success',
+            remove: 'bg-warning text-dark',
+            sort: 'bg-info text-dark',
+            reject: 'bg-danger',
+            error: 'bg-danger'
+         };
+
+         document.querySelectorAll('.tagBuilderEventIndicator').forEach(function(indicator) {
+            var fieldId = indicator.id.replace(/_events$/, '');
+            var field = document.getElementById(fieldId);
+            var config = document.getElementById(fieldId + '_config');
+
+            if (config) {
+               config.insertAdjacentElement('beforebegin', indicator);
+            }
+            else if (field && field.parentElement) {
+               field.parentElement.insertAdjacentElement('afterend', indicator);
+            }
+         });
+
+         function showTagBuilderEvent(event) {
+            var fieldId = event.target && event.target.id;
+            var indicator = fieldId ? document.getElementById(fieldId + '_events') : null;
+
+            if (!indicator) {
+               return;
+            }
+
+            var eventName = event.type.replace('tagBuilder:', '');
+            eventCounts[fieldId] = (eventCounts[fieldId] || 0) + 1;
+            indicator.querySelector('[data-event-name]').textContent = event.type;
+            indicator.querySelector('[data-event-name]').className = 'badge ' + eventBadgeClasses[eventName];
+            indicator.querySelector('[data-event-detail]').textContent = JSON.stringify(event.detail);
+
+            var history = indicator.querySelector('[data-event-history]');
+            if (!history) {
+               history = document.createElement('div');
+               history.className = 'd-flex flex-wrap gap-1 mt-2';
+               history.setAttribute('data-event-history', '');
+               history.setAttribute('aria-label', 'Recent tag builder events');
+               indicator.querySelector('[data-event-detail]').insertAdjacentElement('beforebegin', history);
+            }
+
+            var historyItem = document.createElement('span');
+            historyItem.className = 'badge ' + eventBadgeClasses[eventName];
+            historyItem.textContent = eventName === 'update' && event.detail.reason
+               ? eventName + ':' + event.detail.reason
+               : eventName;
+            history.appendChild(historyItem);
+
+            while (history.children.length > 8) {
+               history.removeChild(history.firstElementChild);
+            }
+
+            var count = indicator.querySelector('[data-event-count]');
+            if (count) {
+               count.textContent = eventCounts[fieldId] + (eventCounts[fieldId] === 1 ? ' event' : ' events');
+            }
+         }
+
+         eventNames.forEach(function(name) {
+            document.addEventListener('tagBuilder:' + name, showTagBuilderEvent);
+         });
+      }());
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.14.0/html5sortable.min.js" integrity="sha384-cZfTSiLzVQDaBN1hjURm6ODfx0fOTGTXsYmUXLq97heMPd6gsXI/NlPgIUg4mj07" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -282,5 +427,31 @@
 
     <script src="js/tag-list-builder.js"></script>
     <script src="js/tag-list-builder-typeahead.js"></script>
+    <script>
+      $(function() {
+         window.setTimeout(function() {
+            $('#exampleFive').tagBuilder('set', ['Loaded by JavaScript', 'Event hooks', 'Version 0.3.0']);
+         }, 0);
+
+         $('[data-example-five-action]').on('click', function() {
+            var field = $('#exampleFive');
+            var action = $(this).attr('data-example-five-action');
+
+            if (action === 'set') {
+               field.tagBuilder('set', ['Loaded by JavaScript', 'Saved values', 'Rendered tags']);
+            }
+            else if (action === 'add') {
+               field.tagBuilder('add', 'Added at ' + new Date().toLocaleTimeString());
+            }
+            else if (action === 'refresh') {
+               field.attr('data-fieldvalue', JSON.stringify(['Refreshed value', 'From data-fieldvalue']));
+               field.tagBuilder('refresh');
+            }
+            else if (action === 'clear') {
+               field.tagBuilder('clear');
+            }
+         });
+      });
+    </script>
 </body>
 </html>

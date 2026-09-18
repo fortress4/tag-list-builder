@@ -65,6 +65,13 @@
             <input type="hidden" class="tagBuilder" id="readonly" value="[&quot;Locked&quot;]" data-fieldvalue="[&quot;Locked&quot;]" data-tagsorting="1" data-readonly="1" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
         </section>
 
+        <section class="tagBuilderWrapper" id="api_wrap">
+            <input class="tagBuilderAdd" id="api_add">
+            <div class="tagBuilderMsg" id="api_msg">Empty</div>
+            <div class="tagBuilderBin" id="api_bin"></div>
+            <input type="hidden" class="tagBuilder" id="api" value="[&quot;Server&quot;]" data-fieldvalue="[&quot;Server&quot;]" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
         <section class="tagBuilderWrapper" id="typeahead_wrap">
             <div class="typeahead__container">
                 <div class="typeahead__field">
@@ -88,6 +95,20 @@
     <script src="../js/tag-list-builder.js"></script>
     <script src="../js/tag-list-builder-typeahead.js"></script>
     <script>
+        var eventLog = {};
+        var jqueryDetail = null;
+        document.querySelectorAll('.tagBuilder').forEach(function (field) {
+            eventLog[field.id] = [];
+            ['init', 'update', 'add', 'remove', 'sort', 'reject', 'error'].forEach(function (name) {
+                field.addEventListener('tagBuilder:' + name, function (event) {
+                    eventLog[field.id].push({name: name, detail: event.detail});
+                });
+            });
+        });
+        $('#json').on('tagBuilder:update', function (event) {
+            jqueryDetail = event.detail || (event.originalEvent && event.originalEvent.detail);
+        });
+
         window.setTimeout(function () {
             var jsonInput = document.getElementById('json_add');
             jsonInput.value = 'Mixed Case';
@@ -108,6 +129,19 @@
                 detail: {origin: {items: Array.from(sortBin.children)}}
             }));
 
+            var apiField = $('#api');
+            var apiInitial = apiField.tagBuilder('get');
+            apiField.tagBuilder('set', ['Saved', 'Values'])
+                .tagBuilder('add', 'Third')
+                .tagBuilder('remove', 'Saved');
+            var apiMutated = apiField.tagBuilder('get');
+            apiField.tagBuilder('clear');
+            var apiCleared = apiField.tagBuilder('get');
+            apiField.attr('data-fieldvalue', '["Reloaded","From server"]')
+                .tagBuilder('refresh');
+            var apiRefreshed = apiField.tagBuilder('get');
+            var apiConfig = apiField.tagBuilder('config');
+
             var report = {
                 jquery: window.jQuery && window.jQuery.fn.jquery,
                 errors: window.__testErrors,
@@ -124,7 +158,25 @@
                 readonlyRemoveCount: document.querySelectorAll('#readonly_bin .removeTag').length,
                 readonlyInputDisabled: document.getElementById('readonly_add').disabled,
                 typeaheadFunction: typeof window.jQuery.fn.typeahead,
-                typeaheadCancelButtonCount: document.querySelectorAll('#typeahead_wrap .typeahead__cancel-button').length
+                typeaheadCancelButtonCount: document.querySelectorAll('#typeahead_wrap .typeahead__cancel-button').length,
+                jsonEvents: eventLog.json.map(function (entry) { return entry.name; }),
+                jsonAddUpdate: eventLog.json.some(function (entry) { return entry.name === 'add' && entry.detail.value === 'Mixed Case'; }) &&
+                    eventLog.json.some(function (entry) { return entry.name === 'update' && entry.detail.reason === 'add' && entry.detail.serialized === document.getElementById('json').value; }),
+                legacyInitMigrated: eventLog.legacy.some(function (entry) { return entry.name === 'init' && entry.detail.migrated === true; }),
+                legacyUpdateInit: eventLog.legacy.some(function (entry) { return entry.name === 'update' && entry.detail.reason === 'init'; }),
+                legacyRemoveUpdate: eventLog.legacy.some(function (entry) { return entry.name === 'remove' && entry.detail.value === 'Alpha'; }) &&
+                    eventLog.legacy.some(function (entry) { return entry.name === 'update' && entry.detail.reason === 'remove' && entry.detail.previous.indexOf('Alpha') !== -1; }),
+                sortEvents: eventLog.sort.map(function (entry) { return entry.name; }),
+                sortPrevious: eventLog.sort.some(function (entry) { return entry.name === 'sort' && entry.detail.previous.join(',') === 'First,Second'; }),
+                nativeDetail: eventLog.json.every(function (entry) { return !!entry.detail && entry.detail.fieldId === 'json'; }),
+                jqueryDetail: !!jqueryDetail && jqueryDetail.fieldId === 'json',
+                apiInitial: apiInitial,
+                apiMutated: apiMutated,
+                apiCleared: apiCleared,
+                apiRefreshed: apiRefreshed,
+                apiRendered: Array.from(document.querySelectorAll('#api_bin .tagBuilderTag')).map(function (item) { return item.firstChild.textContent; }),
+                apiConfigFormat: apiConfig.valueFormat,
+                apiUpdateReasons: eventLog.api.filter(function (entry) { return entry.name === 'update'; }).map(function (entry) { return entry.detail.reason; })
             };
             report.passed = report.jquery === '4.0.0' &&
                 report.errors.length === 0 &&
@@ -140,7 +192,23 @@
                 report.readonlyRemoveCount === 0 &&
                 report.readonlyInputDisabled === true &&
                 report.typeaheadFunction === 'function' &&
-                report.typeaheadCancelButtonCount === 1;
+                report.typeaheadCancelButtonCount === 1 &&
+                report.jsonAddUpdate &&
+                report.legacyInitMigrated &&
+                report.legacyUpdateInit &&
+                report.legacyRemoveUpdate &&
+                report.sortEvents.indexOf('sort') !== -1 &&
+                report.sortEvents.indexOf('update') !== -1 &&
+                report.sortPrevious &&
+                report.nativeDetail &&
+                report.jqueryDetail &&
+                JSON.stringify(report.apiInitial) === '["Server"]' &&
+                JSON.stringify(report.apiMutated) === '["Values","Third"]' &&
+                report.apiCleared.length === 0 &&
+                JSON.stringify(report.apiRefreshed) === '["Reloaded","From server"]' &&
+                JSON.stringify(report.apiRendered) === '["Reloaded","From server"]' &&
+                report.apiConfigFormat === 'json' &&
+                ['set', 'add', 'remove', 'clear', 'refresh'].every(function (reason) { return report.apiUpdateReasons.indexOf(reason) !== -1; });
             document.getElementById('results').textContent = JSON.stringify(report, null, 2);
         }, 2500);
     </script>

@@ -1,6 +1,6 @@
 # Bootstrap TagListBuilder
 
-Current component release: `v0.2.0` (also recorded in `version.json` and `package.json`).
+Current component release: `v0.3.0` (also recorded in `version.json` and `package.json`).
 
 The package metadata declares the browser libraries as peer dependencies. jQuery and Bootstrap are required by the supported implementation and presentation; Bootbox, HTML5 Sortable, and jQuery Typeahead are optional peers used only by the corresponding alert, sorting, and typeahead features. The demos load these dependencies from pinned CDNs instead of installing them from npm.
 
@@ -34,6 +34,131 @@ Tag values are stored as a JSON array by default, which safely supports commas i
 JSON mode accepts an existing legacy comma-separated value once and immediately rewrites it as JSON. The deprecated `valueFormat="comma"` option remains available for server-side consumers that still require comma-separated output; tags containing commas are rejected in that mode.
 
 Case normalization is always applied before duplicate checking. `normalizeStoredCase` defaults to `false`, so entered casing is preserved in the saved value. Set it to `true` to save the normalized casing shown by `tagCase`.
+
+## Loading saved values
+
+Server-rendered forms can provide saved values through the hidden field's `value` and `data-fieldvalue` attributes. JSON is the default format:
+
+```html
+<input type="hidden" id="aliases" name="aliases" class="tagBuilder"
+   value='["one","two"]' data-fieldvalue='["one","two"]'
+   data-valueformat="json">
+```
+
+The CFML helpers accept a JSON string, legacy comma-delimited string, or array through `fieldValue`:
+
+```cfml
+<cfset controls.renderTagListInputField(
+   fieldName="aliases",
+   fieldValue=["one", "two"]
+)>
+```
+
+## JavaScript Methods API
+
+Call `tagBuilder()` on the stored `.tagBuilder` input after ready-time initialization. Read methods return data from the first selected field; mutation methods return the jQuery collection and can be chained.
+
+| Method | Argument | Returns | Behavior |
+| --- | --- | --- | --- |
+| `tagBuilder('get')` | None | `string[]` | Returns a copy of the saved values in display order. |
+| `tagBuilder('set', values)` | Array of strings | jQuery collection | Atomically replaces all tags and emits an update with reason `set`. |
+| `tagBuilder('add', value)` | String | jQuery collection | Validates and adds one tag, then emits `add` and `update`. |
+| `tagBuilder('remove', value)` | String | jQuery collection | Removes the matching normalized value, then emits `remove` and `update`. |
+| `tagBuilder('clear')` | None | jQuery collection | Removes all tags and emits an update with reason `clear`. |
+| `tagBuilder('refresh')` | None | jQuery collection | Rereads `data-fieldvalue`, rerenders, and emits an update with reason `refresh`. |
+| `tagBuilder('config')` | None | Object | Returns a copy of the resolved field configuration. |
+
+Examples:
+
+```js
+var values = $('#aliases').tagBuilder('get');
+
+$('#aliases')
+   .tagBuilder('set', ['one', 'two'])
+   .tagBuilder('add', 'three')
+   .tagBuilder('remove', 'one');
+
+$('#aliases').attr('data-fieldvalue', '["saved","values"]');
+$('#aliases').tagBuilder('refresh');
+```
+
+Mutations use the same case normalization, limits, duplicate checks, rendering, and serialization as keyboard input. `set` is atomic: if any supplied value is invalid or duplicated, the existing list is retained and a `tagBuilder:reject` event is emitted. Passing a non-array to `set`, or non-string members within its array, throws a `TypeError`.
+
+The `readonly` option disables user-driven add, remove, and sort behavior. It is not an authorization boundary and does not block deliberate calls to the JavaScript methods API.
+
+## Events API
+
+The builder dispatches native, bubbling `CustomEvent`s on the stored `.tagBuilder` input. Each payload is available through `event.detail` and contains plain strings or copied arrays rather than internal tag objects.
+
+| Event | Fired when | `event.detail` |
+| --- | --- | --- |
+| `tagBuilder:init` | Initialization succeeds | `{ fieldId, values, migrated }` |
+| `tagBuilder:update` | The stored value changes | `{ fieldId, values, previous, reason, serialized }` |
+| `tagBuilder:add` | One tag is accepted | `{ fieldId, value, values }` |
+| `tagBuilder:remove` | One tag is removed | `{ fieldId, value, values }` |
+| `tagBuilder:sort` | Tags are reordered | `{ fieldId, values, previous }` |
+| `tagBuilder:reject` | Input is refused | `{ fieldId, value, reason, message }` |
+| `tagBuilder:error` | Initialization or refresh parsing fails | `{ fieldId, message }` |
+
+### Event reasons
+
+`tagBuilder:update` uses these `reason` values:
+
+- `init`: initial rendering, including legacy-value migration
+- `add`: one value was added
+- `remove`: one value was removed
+- `sort`: displayed values were reordered
+- `set`: values were replaced through the methods API
+- `clear`: values were cleared through the methods API
+- `refresh`: `data-fieldvalue` was reread through the methods API
+
+`tagBuilder:reject` uses `empty`, `controlCharacters`, `maxTagLength`, `comma`, `maxTags`, or `duplicate`. Its `message` property contains the corresponding human-readable validation message.
+
+### Event ordering and initialization
+
+Specific events are dispatched before the general update event:
+
+```text
+tagBuilder:add    -> tagBuilder:update (reason: add)
+tagBuilder:remove -> tagBuilder:update (reason: remove)
+tagBuilder:sort   -> tagBuilder:update (reason: sort)
+tagBuilder:init   -> tagBuilder:update (reason: init)
+```
+
+Initialization events are deferred until the current ready callback completes. A listener registered in a later `$(function () {})` callback can therefore receive `tagBuilder:init` and its corresponding update.
+
+### Listening with JavaScript
+
+```js
+document.getElementById('aliases').addEventListener('tagBuilder:update', function (event) {
+   validateAliases(event.detail.values);
+});
+```
+
+### Listening with jQuery
+
+jQuery 4 exposes the native payload as `event.detail`. The `originalEvent` fallback supports jQuery versions that wrap it differently:
+
+```js
+$('#aliases').on('tagBuilder:update', function (event) {
+   var data = event.detail || (event.originalEvent && event.originalEvent.detail);
+   validateAliases(data.values);
+});
+```
+
+A host can listen for both successful changes and rejected input:
+
+```js
+$('#aliases').on('tagBuilder:update', function (event) {
+   var data = event.detail || event.originalEvent.detail;
+   validateAliasesOnServer(data.values);
+}).on('tagBuilder:reject', function (event) {
+   var data = event.detail || event.originalEvent.detail;
+   $('#aliasError').text(data.message);
+});
+```
+
+Methods and events are integration surfaces, not authorization controls. Applications must still validate values, limits, and permissions on the server.
 
 ## CFML Development Tools
 

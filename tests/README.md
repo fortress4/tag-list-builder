@@ -1,6 +1,6 @@
 # Browser smoke test
 
-The browser smoke test covers safe tag rendering, JSON serialization, legacy comma-value migration, deprecated comma output, readonly behavior, and typeahead initialization against the pinned demo dependencies.
+The browser smoke test covers safe tag rendering, JSON serialization, legacy comma-value migration, deprecated comma output, readonly behavior, typeahead initialization, custom events, and the imperative JavaScript API against the pinned demo dependencies.
 
 Prepare the ignored local dependency cache, serve the repository root over HTTP, and open `tests/browser-smoke.html`:
 

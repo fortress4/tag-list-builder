@@ -1,11 +1,12 @@
 /*
    tag-list-builder.js
-   v0.2.0
+   v0.3.0
 */
 
 var tags_array = Object.create(null);
 var tagBuilderDebug = 0;
 var tbTagSequence = 0;
+var tbPendingInitEvents = [];
 
 var tbConfig = Object.create(null);
 tbConfig.default = {
@@ -42,7 +43,7 @@ $(function() {
             var validationError = tb_validatePreparedTag(tb_field, preparedTag, tags_array[tb_field_id].length);
 
             if (validationError) {
-               throw new Error(validationError);
+               throw new Error(validationError.message);
             }
 
             if (!tb_hasDuplicate(tb_field_id, preparedTag.key)) {
@@ -51,12 +52,14 @@ $(function() {
             }
          });
 
-         tb_writeStoredValue(tb_field);
+         var migrated = tb_isLegacyStoredValue(tb_field);
+         tb_writeStoredValue(tb_field, 'init', true);
          tb_updateEmptyState(tb_field, tb_bin, tb_msg);
+         tb_pendingInitEvent(tb_field, migrated);
       }
       catch (error) {
          tags_array[tb_field_id] = [];
-         tb_showInitializationError(tb_bin, tb_msg, error.message);
+         tb_showInitializationError(tb_field, tb_bin, tb_msg, error.message);
       }
 
       if (tbConfig[tb_field_id].readonly) {
@@ -82,36 +85,27 @@ $(function() {
       }
    });
 
+   window.setTimeout(function() {
+      $.each(tbPendingInitEvents, function(index, pending) {
+         tb_emit(pending.field, 'init', { values: tb_currentValues(pending.field.attr('id')), migrated: pending.migrated });
+         pending.emitUpdate();
+      });
+      tbPendingInitEvents = [];
+   }, 0);
+
    $('.tagBuilderBin').on('click', '.removeTag', function() {
       var removeIcon = $(this);
       var tagItem = removeIcon.closest('.tagBuilderTag');
       var tagBin = tagItem.parent();
       var fieldInput = tagBin.next('.tagBuilder');
       var fieldId = fieldInput.attr('id');
-      var fieldWrapper = tagBin.parent('.tagBuilderWrapper');
-      var fieldMsg = fieldWrapper.find('.tagBuilderMsg');
       var tagKey = tagItem.data('tag-key');
 
       if (tbConfig[fieldId].readonly) {
          return;
       }
 
-      var tagIndex = tags_array[fieldId].findIndex(function(tag) {
-         return tag.key === tagKey;
-      });
-
-      if (tagIndex === -1) {
-         return;
-      }
-
-      tags_array[fieldId].splice(tagIndex, 1);
-      tagItem.remove();
-      tb_writeStoredValue(fieldInput);
-      tb_updateEmptyState(fieldInput, tagBin, fieldMsg);
-
-      if (tbConfig[fieldId].tagSorting === 1) {
-         sortable(tagBin);
-      }
+      tb_removeTagByKey(fieldInput, tagKey);
    });
 
    $('.tagBuilderShowBtn').on('click', function() {
@@ -148,6 +142,7 @@ function tb_initializeSortable(field, container) {
    }
 
    sortableContainers[0].addEventListener('sortupdate', function(event) {
+      var previousValues = tb_currentValues(fieldId);
       var reorderedTags = [];
       var items = event.detail.origin.items;
 
@@ -167,7 +162,8 @@ function tb_initializeSortable(field, container) {
       }
 
       tags_array[fieldId] = reorderedTags;
-      tb_writeStoredValue(field);
+      tb_emit(field, 'sort', { values: tb_currentValues(fieldId), previous: previousValues });
+      tb_writeStoredValue(field, 'sort', false, previousValues);
 
       if (tagBuilderDebug) {
          console.debug('Tag order updated for field:', fieldId);
@@ -185,31 +181,183 @@ function tb_addTag(field, container, message, addField, event) {
    event.preventDefault();
    event.stopPropagation();
 
-   var preparedTag = tb_prepareTag(field, addField.val());
-   var validationError = tb_validatePreparedTag(field, preparedTag, tags_array[fieldId].length);
-
-   if (validationError) {
-      tb_alert(validationError);
+   if (!tb_addValue(field, addField.val())) {
       return;
    }
 
-   if (tb_hasDuplicate(fieldId, preparedTag.key)) {
-      tb_alert('Tag must be unique.');
-      return;
-   }
-
-   tags_array[fieldId].push(preparedTag);
-   tb_renderTag(field, container, preparedTag);
-   tb_writeStoredValue(field);
    addField.val('');
-   tb_updateEmptyState(field, container, message);
-
-   if (tbConfig[fieldId].tagSorting === 1) {
-      sortable(container);
-   }
 
    if (tbConfig[fieldId].autoComplete) {
       addField.parents('.typeahead__container').removeClass('cancel');
+   }
+}
+
+$.fn.tagBuilder = function(action, value) {
+   var method = action || 'get';
+   var firstField = this.first();
+
+   if (method === 'get') {
+      tb_requireInitialized(firstField);
+      return tb_currentValues(firstField.attr('id'));
+   }
+
+   if (method === 'config') {
+      tb_requireInitialized(firstField);
+      return $.extend({}, tbConfig[firstField.attr('id')]);
+   }
+
+   if (['set', 'add', 'remove', 'clear', 'refresh'].indexOf(method) === -1) {
+      throw new Error('Unknown tagBuilder method: ' + method);
+   }
+
+   return this.each(function() {
+      var field = $(this);
+      tb_requireInitialized(field);
+
+      if (method === 'set') {
+         tb_replaceValues(field, value, 'set');
+      }
+      else if (method === 'add') {
+         tb_addValue(field, value);
+      }
+      else if (method === 'remove') {
+         tb_removeTagByKey(field, tb_prepareTag(field, value).key);
+      }
+      else if (method === 'clear') {
+         tb_replaceValues(field, [], 'clear');
+      }
+      else if (method === 'refresh') {
+         tb_refreshValues(field);
+      }
+   });
+};
+
+function tb_requireInitialized(field) {
+   var fieldId = field.attr('id');
+   if (!field.length || !fieldId || !tbConfig[fieldId] || !tags_array[fieldId]) {
+      throw new Error('tagBuilder must be called on an initialized .tagBuilder field.');
+   }
+}
+
+function tb_fieldParts(field) {
+   var wrapper = field.parent('.tagBuilderWrapper');
+   return {
+      container: wrapper.find('.tagBuilderBin'),
+      message: wrapper.find('.tagBuilderMsg')
+   };
+}
+
+function tb_addValue(field, inputValue) {
+   var fieldId = field.attr('id');
+   var previousValues = tb_currentValues(fieldId);
+   var preparedTag = tb_prepareTag(field, inputValue);
+   var validationError = tb_validatePreparedTag(field, preparedTag, tags_array[fieldId].length);
+
+   if (validationError) {
+      tb_reject(field, preparedTag.value, validationError.code, validationError.message);
+      return false;
+   }
+
+   if (tb_hasDuplicate(fieldId, preparedTag.key)) {
+      tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.');
+      return false;
+   }
+
+   var parts = tb_fieldParts(field);
+   tags_array[fieldId].push(preparedTag);
+   tb_renderTag(field, parts.container, preparedTag);
+   tb_emit(field, 'add', { value: preparedTag.value, values: tb_currentValues(fieldId) });
+   tb_writeStoredValue(field, 'add', false, previousValues);
+   tb_updateEmptyState(field, parts.container, parts.message);
+   tb_refreshSortable(field, parts.container);
+   return true;
+}
+
+function tb_removeTagByKey(field, tagKey) {
+   var fieldId = field.attr('id');
+   var tagIndex = tags_array[fieldId].findIndex(function(tag) {
+      return tag.key === tagKey;
+   });
+
+   if (tagIndex === -1) {
+      return false;
+   }
+
+   var previousValues = tb_currentValues(fieldId);
+   var removedValue = tags_array[fieldId][tagIndex].value;
+   tags_array[fieldId].splice(tagIndex, 1);
+
+   var parts = tb_fieldParts(field);
+   parts.container.find('.tagBuilderTag').filter(function() {
+      return $(this).data('tag-key') === tagKey;
+   }).remove();
+
+   tb_emit(field, 'remove', { value: removedValue, values: tb_currentValues(fieldId) });
+   tb_writeStoredValue(field, 'remove', false, previousValues);
+   tb_updateEmptyState(field, parts.container, parts.message);
+   tb_refreshSortable(field, parts.container);
+   return true;
+}
+
+function tb_replaceValues(field, values, reason) {
+   if (!Array.isArray(values)) {
+      throw new TypeError('tagBuilder set expects an array of string values.');
+   }
+
+   var fieldId = field.attr('id');
+   var preparedTags = [];
+
+   for (var index = 0; index < values.length; index++) {
+      if (typeof values[index] !== 'string') {
+         throw new TypeError('tagBuilder values must be strings.');
+      }
+
+      var preparedTag = tb_prepareTag(field, values[index]);
+      var validationError = tb_validatePreparedTag(field, preparedTag, preparedTags.length);
+
+      if (validationError) {
+         tb_reject(field, preparedTag.value, validationError.code, validationError.message);
+         return false;
+      }
+
+      if (preparedTags.some(function(tag) { return tag.key === preparedTag.key; })) {
+         tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.');
+         return false;
+      }
+
+      preparedTags.push(preparedTag);
+   }
+
+   var previousValues = tb_currentValues(fieldId);
+   var parts = tb_fieldParts(field);
+   tags_array[fieldId] = preparedTags;
+   parts.container.empty();
+   parts.message.removeClass('text-danger');
+
+   $.each(preparedTags, function(tagIndex, tag) {
+      tb_renderTag(field, parts.container, tag);
+   });
+
+   tb_writeStoredValue(field, reason || 'set', false, previousValues);
+   tb_updateEmptyState(field, parts.container, parts.message);
+   tb_refreshSortable(field, parts.container);
+   return true;
+}
+
+function tb_refreshValues(field) {
+   try {
+      return tb_replaceValues(field, tb_parseStoredValues(field), 'refresh');
+   }
+   catch (error) {
+      tb_emit(field, 'error', { message: error.message });
+      return false;
+   }
+}
+
+function tb_refreshSortable(field, container) {
+   var fieldId = field.attr('id');
+   if (tbConfig[fieldId].tagSorting === 1 && !tbConfig[fieldId].readonly) {
+      sortable(container);
    }
 }
 
@@ -230,23 +378,23 @@ function tb_validatePreparedTag(field, tag, currentCount) {
    var config = tbConfig[fieldId];
 
    if (!tag.value.length) {
-      return 'Please enter a tag.';
+      return { code: 'empty', message: 'Please enter a tag.' };
    }
 
    if (/[\u0000-\u001F\u007F]/.test(tag.value)) {
-      return 'Tags cannot contain control characters.';
+      return { code: 'controlCharacters', message: 'Tags cannot contain control characters.' };
    }
 
    if (tag.value.length > config.maxTagLength) {
-      return 'Tags cannot exceed ' + config.maxTagLength + ' characters.';
+      return { code: 'maxTagLength', message: 'Tags cannot exceed ' + config.maxTagLength + ' characters.' };
    }
 
    if (config.valueFormat === 'comma' && tag.value.indexOf(',') !== -1) {
-      return 'Tags cannot contain commas when comma storage is enabled.';
+      return { code: 'comma', message: 'Tags cannot contain commas when comma storage is enabled.' };
    }
 
    if (currentCount >= config.maxTags) {
-      return 'No more than ' + config.maxTags + ' tags are allowed.';
+      return { code: 'maxTags', message: 'No more than ' + config.maxTags + ' tags are allowed.' };
    }
 
    return '';
@@ -313,9 +461,27 @@ function tb_serializeStoredValues(field) {
    return JSON.stringify(values);
 }
 
-function tb_writeStoredValue(field) {
+function tb_writeStoredValue(field, reason, deferEvents, previousOverride) {
+   var fieldId = field.attr('id');
+   var previous = previousOverride || tb_currentValues(fieldId);
    var serializedValue = tb_serializeStoredValues(field);
    field.val(serializedValue).attr('data-fieldvalue', serializedValue);
+
+   var emitUpdate = function() {
+      tb_emit(field, 'update', {
+         values: tb_currentValues(fieldId),
+         previous: previous,
+         reason: reason || 'set',
+         serialized: serializedValue
+      });
+   };
+
+   if (deferEvents) {
+      tbPendingInitEvents.push({ field: field, migrated: false, emitUpdate: emitUpdate });
+   }
+   else {
+      emitUpdate();
+   }
 }
 
 function tb_renderTag(field, container, tag) {
@@ -368,9 +534,64 @@ function tb_updateEmptyState(field, container, message) {
    }
 }
 
-function tb_showInitializationError(container, message, errorMessage) {
+function tb_showInitializationError(field, container, message, errorMessage) {
    container.addClass('d-none');
    message.text('Unable to initialize tags: ' + errorMessage).removeClass('d-none').addClass('text-danger');
+   tb_emit(field, 'error', { message: errorMessage });
+}
+
+function tb_currentValues(fieldId) {
+   return (tags_array[fieldId] || []).map(function(tag) { return tag.value; });
+}
+
+function tb_emit(field, name, detail) {
+   var element = field && field[0];
+   if (!element || typeof window.CustomEvent !== 'function') {
+      return;
+   }
+
+   detail = detail || {};
+   detail.fieldId = field.attr('id');
+
+   try {
+      element.dispatchEvent(new window.CustomEvent('tagBuilder:' + name, {
+         detail: detail,
+         bubbles: true
+      }));
+   }
+   catch (error) {
+      if (tagBuilderDebug && window.console && typeof window.console.warn === 'function') {
+         window.console.warn('Tag Builder event listener failed:', error);
+      }
+   }
+}
+
+function tb_pendingInitEvent(field, migrated) {
+   var pending = tbPendingInitEvents[tbPendingInitEvents.length - 1];
+   if (pending && pending.field[0] === field[0]) {
+      pending.migrated = migrated;
+   }
+}
+
+function tb_isLegacyStoredValue(field) {
+   var rawValue = field.attr('data-fieldvalue');
+   if (tbConfig[field.attr('id')].valueFormat !== 'json' || rawValue == null || !String(rawValue).trim().length) {
+      return false;
+   }
+
+   var trimmedValue = String(rawValue).trim();
+   try {
+      JSON.parse(trimmedValue);
+      return false;
+   }
+   catch (error) {
+      return trimmedValue.charAt(0) !== '[' && trimmedValue.charAt(0) !== '{';
+   }
+}
+
+function tb_reject(field, value, reason, message) {
+   tb_emit(field, 'reject', { value: value, reason: reason, message: message });
+   tb_alert(message);
 }
 
 function tb_alert(message) {

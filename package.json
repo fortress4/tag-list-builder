@@ -1,6 +1,6 @@
 {
   "name": "tag-list-builder",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "A Bootstrap tag-list builder with JSON storage, optional sorting, and optional typeahead support.",
   "main": "dist/js/tag-builder.js",
