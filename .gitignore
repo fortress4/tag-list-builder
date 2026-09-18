@@ -1,5 +1,6 @@
 /.idea/
-/utils/_make-static.cfm
+/utils/
+/backups/
 
 /_notes/sessions/
 

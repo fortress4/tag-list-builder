@@ -1,348 +1,279 @@
 <!DOCTYPE html>
 <head>
-   <meta charset="utf-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-   <meta name="description" content="">
-   <meta name="author" content="">
-   <link rel="icon" href="images/favicon.ico">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://127.0.0.1:8092/tag_list_builder/images/favicon.ico">
+    <title>Bootstrap TagListBuilder</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-typeahead@2.11.1/dist/jquery.typeahead.min.css" integrity="sha256-v9xSYLU+r7kTI8gK714wGSObfWX0rrcWFZvPil8qZEw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="http://127.0.0.1:8092/tag_list_builder/css/tag-list-builder.css">
+    <link rel="stylesheet" href="http://127.0.0.1:8092/tag_list_builder/css/tag-list-builder-typeahead.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+        </nav>
+      </div>
+      <div class="jumbotron">
+         <h1 class="display-3">Bootstrap TagListBuilder</h1>
 
-   <title>Bootstrap TagListBuilder</title>
+      </div>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-         crossorigin="anonymous" referrerpolicy="no-referrer"/>
-
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
-         integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-         crossorigin="anonymous" referrerpolicy="no-referrer"/>
-
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-typeahead@2.11.1/dist/jquery.typeahead.min.css"
-         integrity="sha256-v9xSYLU+r7kTI8gK714wGSObfWX0rrcWFZvPil8qZEw=" crossorigin="anonymous">
-
-   <link rel="stylesheet" href="css/tag-list-builder.css">
-   <link rel="stylesheet" href="css/tag-list-builder-typeahead.css">
-</head>
-
-<body>
-
-<div class="container">
-
-   <div class="header clearfix">
-      <nav>
-
-      </nav>
-
-   </div>
-
-   <div class="jumbotron">
-      <h1 class="display-3">Bootstrap TagListBuilder</h1>
+      <div class="row">
+         <div class="col-lg-6">
+            <div class="card border border-2 rounded-3 m-2 p-4">
+               <div class="card-body">
+                  <h5 class="card-title">Tag Sorting</h5>
 
 
-   </div>
+
+      <div class="tagBuilderWrapper ">
+         <label for="exampleOne_add" class="tagBuilderFieldLabel "></label>
+         <input type="text" id="exampleOne_add" name="exampleOne_add" class="tagBuilderAdd form-control-sm " placeholder="Add&#x20;a&#x20;Tag" autocomplete="off">
+         <div id="exampleOne_msg" class="tagBuilderMsg">Add Tags</div>
+         <div id="exampleOne_bin" class="tagBuilderBin"></div>
+         <input type="hidden" id="exampleOne" name="exampleOne" class="tagBuilder" value="&#x5b;&#x5d;"
+            data-fieldvalue="&#x5b;&#x5d;"
+            data-required="0"
+            data-readonly="0"
+            data-autocomplete="0"
+            data-tagsorting="1"
+            data-normalizestoredcase="0"
+            data-valueformat="json"
+            data-maxtaglength="100"
+            data-maxtags="100"
+            data-tagcase="capitalize"
+
+            data-validatetags="">
 
 
-   <div class="row">
-      <div class="col-lg-6">
 
-         <div class="card border border-2 rounded-3 m-2 p-4">
+      <div class="row d-flex">
+         <div class="col"></div>
+         <div class="w-50 d-flex justify-content-end">
+            <button type="button" id="exampleOne_showbtn" class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
+         </div>
+      </div>
 
-            <div class="card-body">
-               <h5 class="card-title">Tag Sorting</h5>
-
-
-               <div class="tagBuilderWrapper ">
-                  <label class="tagBuilderFieldLabel "></label>
-                  <input type="text" id="exampleOne_add" name="exampleOne_add" class="tagBuilderAdd form-control-sm "
-                         placeholder="Add a Tag" autocomplete="off">
-
-                  <div id="exampleOne_msg" class="tagBuilderMsg">Add Tags</div>
-                  <div id="exampleOne_bin" class="tagBuilderBin"></div>
-                  <input type="hidden" id="exampleOne" name="exampleOne" class="tagBuilder" value="[]"
-                         data-fieldvalue="[]"
-                         data-required="0"
-                         data-readonly="0"
-                         data-autocomplete=0
-                         data-tagsorting="1"
-                         data-normalizestoredcase="0"
-                         data-valueformat="json"
-                         data-maxtaglength="100"
-                         data-maxtags="100"
-                         data-tagcase="capitalize"
+      </div>
 
 
-                         data-validatetags="">
 
+      <div id="exampleOne_config" class="small">
+         <hr class="mt-4">
+         <div>Configured Options:</div>
+         <ul>
+            <li>TypeAhead: No</li>
+            <li>Enable Tag Sorting: Yes</li>
+            <li>Tag Case: capitalize</li>
+            <li>Normalize Stored Case: No</li>
+            <li>Value Format: json</li>
 
-                  <div class="row d-flex">
-                     <div class="col"></div>
-                     <div class="w-50 d-flex justify-content-end">
-                        <button type="button" id="exampleOne_showbtn"
-                                class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i
-                           class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i
-                           class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
-                     </div>
-                  </div>
+         </ul>
+      </div>
 
 
                </div>
+            </div>
+         </div>
+         <div class="col-lg-6">
+            <div class="card border border-2 rounded-3 m-2 p-4">
+                  <h5 class="card-title">No Tag Sorting</h5>
 
 
-               <div id="exampleOne_config" class="small">
-                  <hr class="mt-4">
-                  <div>Configured Options:</div>
-                  <ul>
-                     <li>TypeAhead: No</li>
-                     <li>Enable Tag Sorting: Yes</li>
-                     <li>Tag Case: capitalize</li>
-                     <li>Normalize Stored Case: No</li>
-                     <li>Value Format: json</li>
+
+      <div class="tagBuilderWrapper ">
+         <label for="exampleTwo_add" class="tagBuilderFieldLabel "></label>
+         <input type="text" id="exampleTwo_add" name="exampleTwo_add" class="tagBuilderAdd form-control-sm " placeholder="Add&#x20;a&#x20;Tag" autocomplete="off">
+         <div id="exampleTwo_msg" class="tagBuilderMsg">Add Tags</div>
+         <div id="exampleTwo_bin" class="tagBuilderBin"></div>
+         <input type="hidden" id="exampleTwo" name="exampleTwo" class="tagBuilder" value="&#x5b;&#x5d;"
+            data-fieldvalue="&#x5b;&#x5d;"
+            data-required="0"
+            data-readonly="0"
+            data-autocomplete="0"
+            data-tagsorting="0"
+            data-normalizestoredcase="0"
+            data-valueformat="json"
+            data-maxtaglength="100"
+            data-maxtags="100"
+            data-tagclass="bg-primary"
+            data-taghoverclass="bg-danger"
+            data-validatetags="">
 
 
-                  </ul>
-               </div>
+
+      <div class="row d-flex">
+         <div class="col"></div>
+         <div class="w-50 d-flex justify-content-end">
+            <button type="button" id="exampleTwo_showbtn" class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
+         </div>
+      </div>
+
+      </div>
+
+
+
+      <div id="exampleTwo_config" class="small">
+         <hr class="mt-4">
+         <div>Configured Options:</div>
+         <ul>
+            <li>TypeAhead: No</li>
+            <li>Enable Tag Sorting: No</li>
+            <li>Tag Case: <em>Not Set</em></li>
+            <li>Normalize Stored Case: No</li>
+            <li>Value Format: json</li>
+            <li>Tag Class: bg-primary</li>
+         </ul>
+      </div>
 
 
             </div>
          </div>
-
       </div>
-      <div class="col-lg-6">
 
-         <div class="card border border-2 rounded-3 m-2 p-4">
-
-            <h5 class="card-title">No Tag Sorting</h5>
-
-
-            <div class="tagBuilderWrapper ">
-               <label class="tagBuilderFieldLabel "></label>
-               <input type="text" id="exampleTwo_add" name="exampleTwo_add" class="tagBuilderAdd form-control-sm "
-                      placeholder="Add a Tag" autocomplete="off">
-
-               <div id="exampleTwo_msg" class="tagBuilderMsg">Add Tags</div>
-               <div id="exampleTwo_bin" class="tagBuilderBin"></div>
-               <input type="hidden" id="exampleTwo" name="exampleTwo" class="tagBuilder" value="[]"
-                      data-fieldvalue="[]"
-                      data-required="0"
-                      data-readonly="0"
-                      data-autocomplete=0
-                      data-tagsorting="0"
-                      data-normalizestoredcase="0"
-                      data-valueformat="json"
-                      data-maxtaglength="100"
-                      data-maxtags="100"
-
-                      data-tagclass="bg-primary"
-                      data-taghoverclass="bg-danger"
-                      data-validatetags="">
+      <div class="row">
+         <div class="col-lg-6">
+            <div class="card border border-2 rounded-3 m-2 p-4">
+               <div class="card-body">
+                  <h5 class="card-title">Typeahead with Tag Sorting</h5>
 
 
-               <div class="row d-flex">
-                  <div class="col"></div>
-                  <div class="w-50 d-flex justify-content-end">
-                     <button type="button" id="exampleTwo_showbtn"
-                             class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i
-                        class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i
-                        class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
-                  </div>
+
+      <div class="tagBuilderWrapper ">
+         <label for="exampleThree_add" class="tagBuilderFieldLabel "></label>
+         <div class="typeahead__container">
+            <div class="typeahead__field">
+               <div class="typeahead__query">
+                  <input type="text" id="exampleThree_add" name="exampleThree_add" class="tagBuilderAdd typeahead " placeholder="Add&#x20;a&#x20;Tag" autocomplete="off">
                </div>
-
-
             </div>
-
-
-            <div id="exampleTwo_config" class="small">
-               <hr class="mt-4">
-               <div>Configured Options:</div>
-               <ul>
-                     <li>TypeAhead: No</li>
-                     <li>Enable Tag Sorting: No</li>
-                     <li>Tag Case: <em>Not Set</em></li>
-                     <li>Normalize Stored Case: No</li>
-                     <li>Value Format: json</li>
-                  <li>Tag Class: bg-primary</li>
-
-               </ul>
-            </div>
-
-
          </div>
+         <div id="exampleThree_msg" class="tagBuilderMsg">Add Tags</div>
+         <div id="exampleThree_bin" class="tagBuilderBin"></div>
+         <input type="hidden" id="exampleThree" name="exampleThree" class="tagBuilder" value="&#x5b;&#x5d;"
+            data-fieldvalue="&#x5b;&#x5d;"
+            data-required="0"
+            data-readonly="0"
+            data-autocomplete="1"
+            data-tagsorting="1"
+            data-normalizestoredcase="0"
+            data-valueformat="json"
+            data-maxtaglength="100"
+            data-maxtags="100"
+            data-tagcase="upper"
+            data-tagclass="bg-info"
+            data-taghoverclass="bg-danger"
+            data-validatetags="">
+
+
+
+      <div class="row d-flex">
+         <div class="col"></div>
+         <div class="w-50 d-flex justify-content-end">
+            <button type="button" id="exampleThree_showbtn" class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
+         </div>
+      </div>
 
       </div>
-   </div>
 
 
-   <div class="row">
-      <div class="col-lg-6">
 
-         <div class="card border border-2 rounded-3 m-2 p-4">
-
-            <div class="card-body">
-               <h5 class="card-title">Typeahead with Tag Sorting</h5>
-
-
-               <div class="tagBuilderWrapper ">
-                  <label class="tagBuilderFieldLabel "></label>
-                  <div class="typeahead__container">
-                     <div class="typeahead__field">
-                        <div class="typeahead__query">
-                           <input type="text" id="exampleThree_add" name="exampleThree_add"
-                                  class="tagBuilderAdd typeahead " placeholder="Add a Tag" autocomplete="off">
-                        </div>
-
-                     </div>
-                  </div>
-
-                  <div id="exampleThree_msg" class="tagBuilderMsg">Add Tags</div>
-                  <div id="exampleThree_bin" class="tagBuilderBin"></div>
-                  <input type="hidden" id="exampleThree" name="exampleThree" class="tagBuilder" value="[]"
-                         data-fieldvalue="[]"
-                         data-required="0"
-                         data-readonly="0"
-                         data-autocomplete="1"
-                         data-tagsorting="1"
-                         data-normalizestoredcase="0"
-                         data-valueformat="json"
-                         data-maxtaglength="100"
-                         data-maxtags="100"
-                         data-tagcase="upper"
-                         data-tagclass="bg-info"
-                         data-taghoverclass="bg-danger"
-                         data-validatetags="">
-
-
-                  <div class="row d-flex">
-                     <div class="col"></div>
-                     <div class="w-50 d-flex justify-content-end">
-                        <button type="button" id="exampleThree_showbtn"
-                                class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i
-                           class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i
-                           class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
-                     </div>
-                  </div>
+      <div id="exampleThree_config" class="small">
+         <hr class="mt-4">
+         <div>Configured Options:</div>
+         <ul>
+            <li>TypeAhead: Yes</li>
+            <li>Enable Tag Sorting: Yes</li>
+            <li>Tag Case: upper</li>
+            <li>Normalize Stored Case: No</li>
+            <li>Value Format: json</li>
+            <li>Tag Class: bg-info</li>
+            <li>Sort Hover Class: bg-danger</li>
+         </ul>
+      </div>
 
 
                </div>
+            </div>
+         </div>
+         <div class="col-lg-6">
+            <div class="card border border-2 rounded-3 m-2 p-4">
+                  <h5 class="card-title">Typeahead with No Tag Sorting</h5>
 
 
-               <div id="exampleThree_config" class="small">
-                  <hr class="mt-4">
-                  <div>Configured Options:</div>
-                  <ul>
-                     <li>TypeAhead: Yes</li>
-                     <li>Enable Tag Sorting: Yes</li>
-                     <li>Tag Case: upper</li>
-                     <li>Normalize Stored Case: No</li>
-                     <li>Value Format: json</li>
-                     <li>Tag Class: bg-info</li>
 
-                     <li>Sort Hover Class: bg-danger</li>
-
-                  </ul>
+      <div class="tagBuilderWrapper ">
+         <label for="exampleFour_add" class="tagBuilderFieldLabel "></label>
+         <div class="typeahead__container">
+            <div class="typeahead__field">
+               <div class="typeahead__query">
+                  <input type="text" id="exampleFour_add" name="exampleFour_add" class="tagBuilderAdd typeahead " placeholder="Add&#x20;a&#x20;Tag" autocomplete="off">
                </div>
+            </div>
+         </div>
+         <div id="exampleFour_msg" class="tagBuilderMsg">Add Tags</div>
+         <div id="exampleFour_bin" class="tagBuilderBin"></div>
+         <input type="hidden" id="exampleFour" name="exampleFour" class="tagBuilder" value="&#x5b;&#x5d;"
+            data-fieldvalue="&#x5b;&#x5d;"
+            data-required="0"
+            data-readonly="0"
+            data-autocomplete="1"
+            data-tagsorting="0"
+            data-normalizestoredcase="0"
+            data-valueformat="json"
+            data-maxtaglength="100"
+            data-maxtags="100"
+            data-tagcase="lower"
+            data-tagclass="bg-success"
+            data-taghoverclass="bg-warning"
+            data-validatetags="">
+
+
+
+      <div class="row d-flex">
+         <div class="col"></div>
+         <div class="w-50 d-flex justify-content-end">
+            <button type="button" id="exampleFour_showbtn" class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
+         </div>
+      </div>
+
+      </div>
+
+
+
+      <div id="exampleFour_config" class="small">
+         <hr class="mt-4">
+         <div>Configured Options:</div>
+         <ul>
+            <li>TypeAhead: Yes</li>
+            <li>Enable Tag Sorting: No</li>
+            <li>Tag Case: lower</li>
+            <li>Normalize Stored Case: No</li>
+            <li>Value Format: json</li>
+            <li>Tag Class: bg-success</li>
+         </ul>
+      </div>
 
 
             </div>
          </div>
-
       </div>
-      <div class="col-lg-6">
 
-         <div class="card border border-2 rounded-3 m-2 p-4">
-
-            <h5 class="card-title">Typeahead with No Tag Sorting</h5>
-
-
-            <div class="tagBuilderWrapper ">
-               <label class="tagBuilderFieldLabel "></label>
-               <div class="typeahead__container">
-                  <div class="typeahead__field">
-                     <div class="typeahead__query">
-                        <input type="text" id="exampleFour_add" name="exampleFour_add" class="tagBuilderAdd typeahead "
-                               placeholder="Add a Tag" autocomplete="off">
-                     </div>
-
-                  </div>
-               </div>
-
-               <div id="exampleFour_msg" class="tagBuilderMsg">Add Tags</div>
-               <div id="exampleFour_bin" class="tagBuilderBin"></div>
-               <input type="hidden" id="exampleFour" name="exampleFour" class="tagBuilder" value="[]"
-                      data-fieldvalue="[]"
-                      data-required="0"
-                      data-readonly="0"
-                      data-autocomplete="1"
-                      data-tagsorting="0"
-                      data-normalizestoredcase="0"
-                      data-valueformat="json"
-                      data-maxtaglength="100"
-                      data-maxtags="100"
-                      data-tagcase="lower"
-                      data-tagclass="bg-success"
-                      data-taghoverclass="bg-warning"
-                      data-validatetags="">
-
-
-               <div class="row d-flex">
-                  <div class="col"></div>
-                  <div class="w-50 d-flex justify-content-end">
-                     <button type="button" id="exampleFour_showbtn"
-                             class="btn btn-secondary btn-sm text-right tagBuilderShowBtn"><i
-                        class="fa-regular fa-eye me-2 tagBuilderShowEye"></i><span>Show Raw Tag List</span><i
-                        class="fa-solid fa-caret-down ms-2 tagBuilderShowArrow"></i></button>
-                  </div>
-               </div>
-
-
-            </div>
-
-
-            <div id="exampleFour_config" class="small">
-               <hr class="mt-4">
-               <div>Configured Options:</div>
-               <ul>
-                     <li>TypeAhead: Yes</li>
-                     <li>Enable Tag Sorting: No</li>
-                     <li>Tag Case: lower</li>
-                     <li>Normalize Stored Case: No</li>
-                     <li>Value Format: json</li>
-                  <li>Tag Class: bg-success</li>
-
-               </ul>
-            </div>
-
-
-         </div>
-
-      </div>
-   </div>
-
-
-   <footer class="footer">
-      <p>&copy; 2023 Bootstrap TagListBuilder</p>
-   </footer>
-
-</div> <!-- /container -->
-
-<script src="https://code.jquery.com/jquery-4.0.0.min.js"
-        integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.14.0/html5sortable.min.js"
-        integrity="sha384-cZfTSiLzVQDaBN1hjURm6ODfx0fOTGTXsYmUXLq97heMPd6gsXI/NlPgIUg4mj07"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.4/bootbox.min.js"
-        integrity="sha384-sEKDF42n+J1rv9zPsx1WjN0wH4m6lBxfyXa74WJls1fYFLeqsFc+SwNktG6hiv78"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/jquery-typeahead@2.11.1/dist/jquery.typeahead.min.js"
-        integrity="sha256-HQvzpKdugcSoVwponjVtzqQ+dpijVZYbuvodUpcGAIs=" crossorigin="anonymous"></script>
-
-<script src="js/tag-list-builder.js"></script>
-<script src="js/tag-list-builder-typeahead.js"></script>
+      <footer class="footer">
+         <p>&copy; 2026 Bootstrap TagListBuilder</p>
+      </footer>
+    </div> <!-- /container -->
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.14.0/html5sortable.min.js" integrity="sha384-cZfTSiLzVQDaBN1hjURm6ODfx0fOTGTXsYmUXLq97heMPd6gsXI/NlPgIUg4mj07" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.4/bootbox.min.js" integrity="sha384-sEKDF42n+J1rv9zPsx1WjN0wH4m6lBxfyXa74WJls1fYFLeqsFc+SwNktG6hiv78" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-typeahead@2.11.1/dist/jquery.typeahead.min.js" integrity="sha256-HQvzpKdugcSoVwponjVtzqQ+dpijVZYbuvodUpcGAIs=" crossorigin="anonymous"></script>
+    <script src="http://127.0.0.1:8092/tag_list_builder/js/tag-list-builder.js"></script>
+    <script src="http://127.0.0.1:8092/tag_list_builder/js/tag-list-builder-typeahead.js"></script>
 </body>
 </html>
