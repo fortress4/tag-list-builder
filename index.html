@@ -8,8 +8,8 @@
 
    <title>Bootstrap TagListBuilder</title>
 
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
-         integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
          crossorigin="anonymous" referrerpolicy="no-referrer"/>
 
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
@@ -57,12 +57,16 @@
 
                   <div id="exampleOne_msg" class="tagBuilderMsg">Add Tags</div>
                   <div id="exampleOne_bin" class="tagBuilderBin"></div>
-                  <input type="hidden" id="exampleOne" name="exampleOne" class="tagBuilder" value=""
-                         data-fieldvalue=""
+                  <input type="hidden" id="exampleOne" name="exampleOne" class="tagBuilder" value="[]"
+                         data-fieldvalue="[]"
                          data-required="0"
                          data-readonly="0"
                          data-autocomplete=0
                          data-tagsorting="1"
+                         data-normalizestoredcase="0"
+                         data-valueformat="json"
+                         data-maxtaglength="100"
+                         data-maxtags="100"
                          data-tagcase="capitalize"
 
 
@@ -90,6 +94,8 @@
                      <li>TypeAhead: No</li>
                      <li>Enable Tag Sorting: Yes</li>
                      <li>Tag Case: capitalize</li>
+                     <li>Normalize Stored Case: No</li>
+                     <li>Value Format: json</li>
 
 
                   </ul>
@@ -114,12 +120,16 @@
 
                <div id="exampleTwo_msg" class="tagBuilderMsg">Add Tags</div>
                <div id="exampleTwo_bin" class="tagBuilderBin"></div>
-               <input type="hidden" id="exampleTwo" name="exampleTwo" class="tagBuilder" value=""
-                      data-fieldvalue=""
+               <input type="hidden" id="exampleTwo" name="exampleTwo" class="tagBuilder" value="[]"
+                      data-fieldvalue="[]"
                       data-required="0"
                       data-readonly="0"
                       data-autocomplete=0
                       data-tagsorting="0"
+                      data-normalizestoredcase="0"
+                      data-valueformat="json"
+                      data-maxtaglength="100"
+                      data-maxtags="100"
 
                       data-tagclass="bg-primary"
                       data-taghoverclass="bg-danger"
@@ -144,9 +154,11 @@
                <hr class="mt-4">
                <div>Configured Options:</div>
                <ul>
-                  <li>TypeAhead: No</li>
-                  <li>Enable Tag Sorting: No</li>
-                  <li>Tag Case: <em>Not Set</em></li>
+                     <li>TypeAhead: No</li>
+                     <li>Enable Tag Sorting: No</li>
+                     <li>Tag Case: <em>Not Set</em></li>
+                     <li>Normalize Stored Case: No</li>
+                     <li>Value Format: json</li>
                   <li>Tag Class: bg-primary</li>
 
                </ul>
@@ -182,12 +194,16 @@
 
                   <div id="exampleThree_msg" class="tagBuilderMsg">Add Tags</div>
                   <div id="exampleThree_bin" class="tagBuilderBin"></div>
-                  <input type="hidden" id="exampleThree" name="exampleThree" class="tagBuilder" value=""
-                         data-fieldvalue=""
+                  <input type="hidden" id="exampleThree" name="exampleThree" class="tagBuilder" value="[]"
+                         data-fieldvalue="[]"
                          data-required="0"
                          data-readonly="0"
-                         data-autocomplete=0
+                         data-autocomplete="1"
                          data-tagsorting="1"
+                         data-normalizestoredcase="0"
+                         data-valueformat="json"
+                         data-maxtaglength="100"
+                         data-maxtags="100"
                          data-tagcase="upper"
                          data-tagclass="bg-info"
                          data-taghoverclass="bg-danger"
@@ -215,6 +231,8 @@
                      <li>TypeAhead: Yes</li>
                      <li>Enable Tag Sorting: Yes</li>
                      <li>Tag Case: upper</li>
+                     <li>Normalize Stored Case: No</li>
+                     <li>Value Format: json</li>
                      <li>Tag Class: bg-info</li>
 
                      <li>Sort Hover Class: bg-danger</li>
@@ -248,12 +266,16 @@
 
                <div id="exampleFour_msg" class="tagBuilderMsg">Add Tags</div>
                <div id="exampleFour_bin" class="tagBuilderBin"></div>
-               <input type="hidden" id="exampleFour" name="exampleFour" class="tagBuilder" value=""
-                      data-fieldvalue=""
+               <input type="hidden" id="exampleFour" name="exampleFour" class="tagBuilder" value="[]"
+                      data-fieldvalue="[]"
                       data-required="0"
                       data-readonly="0"
-                      data-autocomplete=0
+                      data-autocomplete="1"
                       data-tagsorting="0"
+                      data-normalizestoredcase="0"
+                      data-valueformat="json"
+                      data-maxtaglength="100"
+                      data-maxtags="100"
                       data-tagcase="lower"
                       data-tagclass="bg-success"
                       data-taghoverclass="bg-warning"
@@ -278,9 +300,11 @@
                <hr class="mt-4">
                <div>Configured Options:</div>
                <ul>
-                  <li>TypeAhead: Yes</li>
-                  <li>Enable Tag Sorting: No</li>
-                  <li>Tag Case: lower</li>
+                     <li>TypeAhead: Yes</li>
+                     <li>Enable Tag Sorting: No</li>
+                     <li>Tag Case: lower</li>
+                     <li>Normalize Stored Case: No</li>
+                     <li>Value Format: json</li>
                   <li>Tag Class: bg-success</li>
 
                </ul>
@@ -299,20 +323,20 @@
 
 </div> <!-- /container -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"
-        integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ=="
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"
+        integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"
-        integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A=="
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.13.3/html5sortable.min.js"
-        integrity="sha512-3btxfhQfasdVcv1dKYZph5P7jFeeLRcF1gDVzFA+k9AiwwhB1MNI7O58zCK0uVItuMHNDR5pMoF2nqlCGzUwZQ=="
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.14.0/html5sortable.min.js"
+        integrity="sha384-cZfTSiLzVQDaBN1hjURm6ODfx0fOTGTXsYmUXLq97heMPd6gsXI/NlPgIUg4mj07"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.0/bootbox.min.js"
-        integrity="sha512-oVbWSv2O4y1UzvExJMHaHcaib4wsBMS5tEP3/YkMP6GmkwRJAa79Jwsv+Y/w7w2Vb/98/Xhvck10LyJweB8Jsw=="
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.4/bootbox.min.js"
+        integrity="sha384-sEKDF42n+J1rv9zPsx1WjN0wH4m6lBxfyXa74WJls1fYFLeqsFc+SwNktG6hiv78"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-typeahead@2.11.1/dist/jquery.typeahead.min.js"

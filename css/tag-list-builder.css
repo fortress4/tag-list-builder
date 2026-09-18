@@ -65,3 +65,7 @@ tagBuilderWrapper {
    padding: 0;
    padding-left: 1em;
 }
+
+.tagBuilderWrapper .tagBuilderPH {
+  width: 90px;
+}

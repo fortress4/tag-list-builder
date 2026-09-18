@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Tag List Builder Browser Test</title>
+    <link href=".cache/bootstrap-5.3.8.min.css" rel="stylesheet">
+    <link href=".cache/jquery.typeahead-2.11.1.min.css" rel="stylesheet">
+    <link href="../css/tag-list-builder.css" rel="stylesheet">
+    <script>
+        window.__testErrors = [];
+        window.addEventListener('error', function (event) {
+            window.__testErrors.push(event.message + ' @ ' + event.filename + ':' + event.lineno);
+        });
+    </script>
+</head>
+<body>
+    <main>
+        <section class="tagBuilderWrapper" id="json_wrap">
+            <label for="json_add">JSON</label>
+            <input class="tagBuilderAdd" id="json_add">
+            <div class="tagBuilderMsg" id="json_msg">Empty</div>
+            <div class="tagBuilderBin" id="json_bin"></div>
+            <input type="hidden" class="tagBuilder" id="json" value="[&quot;Admin&quot;,&quot;Washington, DC&quot;,&quot;&lt;img src=x onerror=window.__xss=1&gt;&quot;]" data-fieldvalue="[&quot;Admin&quot;,&quot;Washington, DC&quot;,&quot;&lt;img src=x onerror=window.__xss=1&gt;&quot;]" data-tagsorting="0" data-readonly="0" data-tagcase="lower" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="legacy_wrap">
+            <input class="tagBuilderAdd" id="legacy_add">
+            <div class="tagBuilderMsg" id="legacy_msg">Empty</div>
+            <div class="tagBuilderBin" id="legacy_bin"></div>
+            <input type="hidden" class="tagBuilder" id="legacy" value="Alpha,Beta" data-fieldvalue="Alpha,Beta" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="comma_wrap">
+            <input class="tagBuilderAdd" id="comma_add">
+            <div class="tagBuilderMsg" id="comma_msg">Empty</div>
+            <div class="tagBuilderBin" id="comma_bin"></div>
+            <input type="hidden" class="tagBuilder" id="comma" value="One,Two" data-fieldvalue="One,Two" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="comma" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="normalized_wrap">
+            <input class="tagBuilderAdd" id="normalized_add">
+            <div class="tagBuilderMsg" id="normalized_msg">Empty</div>
+            <div class="tagBuilderBin" id="normalized_bin"></div>
+            <input type="hidden" class="tagBuilder" id="normalized" value="[&quot;Mixed&quot;]" data-fieldvalue="[&quot;Mixed&quot;]" data-tagsorting="0" data-readonly="0" data-tagcase="upper" data-normalizestoredcase="1" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="sort_wrap">
+            <input class="tagBuilderAdd" id="sort_add">
+            <div class="tagBuilderMsg" id="sort_msg">Empty</div>
+            <div class="tagBuilderBin" id="sort_bin"></div>
+            <input type="hidden" class="tagBuilder" id="sort" value="[&quot;First&quot;,&quot;Second&quot;]" data-fieldvalue="[&quot;First&quot;,&quot;Second&quot;]" data-tagsorting="1" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="invalid_wrap">
+            <input class="tagBuilderAdd" id="invalid_add">
+            <div class="tagBuilderMsg" id="invalid_msg">Empty</div>
+            <div class="tagBuilderBin" id="invalid_bin"></div>
+            <input type="hidden" class="tagBuilder" id="invalid" value="null" data-fieldvalue="null" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="readonly_wrap">
+            <input class="tagBuilderAdd" id="readonly_add" disabled>
+            <div class="tagBuilderMsg" id="readonly_msg">Empty</div>
+            <div class="tagBuilderBin" id="readonly_bin"></div>
+            <input type="hidden" class="tagBuilder" id="readonly" value="[&quot;Locked&quot;]" data-fieldvalue="[&quot;Locked&quot;]" data-tagsorting="1" data-readonly="1" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
+        <section class="tagBuilderWrapper" id="typeahead_wrap">
+            <div class="typeahead__container">
+                <div class="typeahead__field">
+                    <div class="typeahead__query">
+                        <input class="tagBuilderAdd typeahead" id="typeahead_add" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            <div class="tagBuilderMsg" id="typeahead_msg">Empty</div>
+            <div class="tagBuilderBin" id="typeahead_bin"></div>
+            <input type="hidden" class="tagBuilder" id="typeahead" value="[]" data-fieldvalue="[]" data-autocomplete="1" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+    </main>
+    <pre id="results">pending</pre>
+
+    <script src=".cache/jquery-4.0.0.min.js"></script>
+    <script src=".cache/bootstrap-5.3.8.bundle.min.js"></script>
+    <script src=".cache/html5sortable-0.14.0.min.js"></script>
+    <script src=".cache/bootbox-6.0.4.min.js"></script>
+    <script src=".cache/jquery.typeahead-2.11.1.min.js"></script>
+    <script src="../js/tag-list-builder.js"></script>
+    <script src="../js/tag-list-builder-typeahead.js"></script>
+    <script>
+        window.setTimeout(function () {
+            var jsonInput = document.getElementById('json_add');
+            jsonInput.value = 'Mixed Case';
+            jsonInput.dispatchEvent(new KeyboardEvent('keyup', {key: 'Enter', bubbles: true}));
+            jsonInput.value = 'ADMIN';
+            jsonInput.dispatchEvent(new KeyboardEvent('keyup', {key: 'Enter', bubbles: true}));
+
+            document.querySelector('#legacy_bin .removeTag').click();
+
+            var commaInput = document.getElementById('comma_add');
+            commaInput.value = 'Washington, DC';
+            commaInput.dispatchEvent(new KeyboardEvent('keyup', {key: 'Enter', bubbles: true}));
+
+            var sortBin = document.getElementById('sort_bin');
+            sortBin.insertBefore(sortBin.lastElementChild, sortBin.firstElementChild);
+            sortBin.dispatchEvent(new CustomEvent('sortupdate', {
+                bubbles: true,
+                detail: {origin: {items: Array.from(sortBin.children)}}
+            }));
+
+            var report = {
+                jquery: window.jQuery && window.jQuery.fn.jquery,
+                errors: window.__testErrors,
+                xssExecuted: window.__xss === 1,
+                jsonValue: document.getElementById('json').value,
+                jsonLabels: Array.from(document.querySelectorAll('#json_bin .tagBuilderTag')).map(function (item) { return item.firstChild.textContent; }),
+                jsonTagCount: document.querySelectorAll('#json_bin .tagBuilderTag').length,
+                normalizedValue: document.getElementById('normalized').value,
+                sortedValue: document.getElementById('sort').value,
+                invalidJsonRejected: document.getElementById('invalid_msg').textContent.indexOf('must be an array') !== -1,
+                jsonNestedImages: document.querySelectorAll('#json_bin img').length,
+                legacyRewritten: document.getElementById('legacy').value,
+                commaValue: document.getElementById('comma').value,
+                readonlyRemoveCount: document.querySelectorAll('#readonly_bin .removeTag').length,
+                readonlyInputDisabled: document.getElementById('readonly_add').disabled,
+                typeaheadFunction: typeof window.jQuery.fn.typeahead,
+                typeaheadCancelButtonCount: document.querySelectorAll('#typeahead_wrap .typeahead__cancel-button').length
+            };
+            report.passed = report.jquery === '4.0.0' &&
+                report.errors.length === 0 &&
+                report.xssExecuted === false &&
+                report.jsonValue === JSON.stringify(['Admin', 'Washington, DC', '<img src=x onerror=window.__xss=1>', 'Mixed Case']) &&
+                report.jsonTagCount === 4 &&
+                report.normalizedValue === '["MIXED"]' &&
+                report.sortedValue === '["Second","First"]' &&
+                report.invalidJsonRejected === true &&
+                report.jsonNestedImages === 0 &&
+                report.legacyRewritten === '["Beta"]' &&
+                report.commaValue === 'One,Two' &&
+                report.readonlyRemoveCount === 0 &&
+                report.readonlyInputDisabled === true &&
+                report.typeaheadFunction === 'function' &&
+                report.typeaheadCancelButtonCount === 1;
+            document.getElementById('results').textContent = JSON.stringify(report, null, 2);
+        }, 2500);
+    </script>
+</body>
+</html>
