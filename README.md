@@ -1,5 +1,9 @@
 # Bootstrap TagListBuilder
 
+Current component release: `v0.2.0` (also recorded in `version.json` and `package.json`).
+
+The package metadata declares the browser libraries as peer dependencies. jQuery and Bootstrap are required by the supported implementation and presentation; Bootbox, HTML5 Sortable, and jQuery Typeahead are optional peers used only by the corresponding alert, sorting, and typeahead features. The demos load these dependencies from pinned CDNs instead of installing them from npm.
+
 Inspired by [thebigtank's](https://github.com/thebigtank) ["tags builder with jquery"](https://github.com/thebigtank/tags-builder-with-jquery) tutorial.
 
 Dependencies:
