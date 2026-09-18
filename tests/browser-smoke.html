@@ -72,6 +72,13 @@
             <input type="hidden" class="tagBuilder" id="api" value="[&quot;Server&quot;]" data-fieldvalue="[&quot;Server&quot;]" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
         </section>
 
+        <section class="tagBuilderWrapper" id="items_wrap">
+            <input class="tagBuilderAdd" id="items_add">
+            <div class="tagBuilderMsg" id="items_msg">Empty</div>
+            <div class="tagBuilderBin" id="items_bin"></div>
+            <input type="hidden" class="tagBuilder" id="items" value="[&quot;101&quot;,&quot;202&quot;,&quot;404&quot;]" data-fieldvalue="[{&quot;value&quot;:&quot;101&quot;,&quot;label&quot;:&quot;First label&quot;},{&quot;value&quot;:&quot;202&quot;,&quot;label&quot;:&quot;Second label&quot;},{&quot;value&quot;:&quot;404&quot;,&quot;label&quot;:&quot;&lt;img src=x onerror=window.__xss=1&gt;&quot;}]" data-tagsorting="0" data-readonly="0" data-normalizestoredcase="0" data-valueformat="json" data-maxtaglength="100" data-maxtags="100">
+        </section>
+
         <section class="tagBuilderWrapper" id="typeahead_wrap">
             <div class="typeahead__container">
                 <div class="typeahead__field">
@@ -142,6 +149,16 @@
             var apiRefreshed = apiField.tagBuilder('get');
             var apiConfig = apiField.tagBuilder('config');
 
+            var itemsField = $('#items');
+            var itemInitialValues = itemsField.tagBuilder('get');
+            var itemInitialItems = itemsField.tagBuilder('getItems');
+            itemsField.tagBuilder('add', {value: '303', label: 'Third label'})
+                .tagBuilder('remove', '101')
+                .tagBuilder('remove', '404')
+                .tagBuilder('refresh');
+            var itemFinalValues = itemsField.tagBuilder('get');
+            var itemFinalItems = itemsField.tagBuilder('getItems');
+
             var report = {
                 jquery: window.jQuery && window.jQuery.fn.jquery,
                 errors: window.__testErrors,
@@ -176,7 +193,16 @@
                 apiRefreshed: apiRefreshed,
                 apiRendered: Array.from(document.querySelectorAll('#api_bin .tagBuilderTag')).map(function (item) { return item.firstChild.textContent; }),
                 apiConfigFormat: apiConfig.valueFormat,
-                apiUpdateReasons: eventLog.api.filter(function (entry) { return entry.name === 'update'; }).map(function (entry) { return entry.detail.reason; })
+                apiUpdateReasons: eventLog.api.filter(function (entry) { return entry.name === 'update'; }).map(function (entry) { return entry.detail.reason; }),
+                itemInitialValues: itemInitialValues,
+                itemInitialItems: itemInitialItems,
+                itemFinalValues: itemFinalValues,
+                itemFinalItems: itemFinalItems,
+                itemStoredValue: itemsField.val(),
+                itemSourceValue: itemsField.attr('data-fieldvalue'),
+                itemLabels: Array.from(document.querySelectorAll('#items_bin .tagBuilderTag')).map(function (item) { return item.firstChild.textContent; }),
+                itemNestedImages: document.querySelectorAll('#items_bin img').length,
+                itemEventPayload: eventLog.items.some(function (entry) { return entry.name === 'add' && entry.detail.item.label === 'Third label' && entry.detail.items.length === 4; })
             };
             report.passed = report.jquery === '4.0.0' &&
                 report.errors.length === 0 &&
@@ -208,7 +234,16 @@
                 JSON.stringify(report.apiRefreshed) === '["Reloaded","From server"]' &&
                 JSON.stringify(report.apiRendered) === '["Reloaded","From server"]' &&
                 report.apiConfigFormat === 'json' &&
-                ['set', 'add', 'remove', 'clear', 'refresh'].every(function (reason) { return report.apiUpdateReasons.indexOf(reason) !== -1; });
+                ['set', 'add', 'remove', 'clear', 'refresh'].every(function (reason) { return report.apiUpdateReasons.indexOf(reason) !== -1; }) &&
+                JSON.stringify(report.itemInitialValues) === '["101","202","404"]' &&
+                report.itemInitialItems[0].label === 'First label' &&
+                JSON.stringify(report.itemFinalValues) === '["202","303"]' &&
+                report.itemFinalItems[1].label === 'Third label' &&
+                report.itemStoredValue === '["202","303"]' &&
+                JSON.parse(report.itemSourceValue)[1].label === 'Third label' &&
+                JSON.stringify(report.itemLabels) === '["Second label","Third label"]' &&
+                report.itemNestedImages === 0 &&
+                report.itemEventPayload;
             document.getElementById('results').textContent = JSON.stringify(report, null, 2);
         }, 2500);
     </script>

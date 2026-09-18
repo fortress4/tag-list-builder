@@ -1,6 +1,6 @@
 # Bootstrap TagListBuilder
 
-Current component release: `v0.3.0` (also recorded in `version.json` and `package.json`).
+Current component release: `v0.3.1` (also recorded in `version.json` and `package.json`).
 
 The package metadata declares the browser libraries as peer dependencies. jQuery and Bootstrap are required by the supported implementation and presentation; Bootbox, HTML5 Sortable, and jQuery Typeahead are optional peers used only by the corresponding alert, sorting, and typeahead features. The demos load these dependencies from pinned CDNs instead of installing them from npm.
 
@@ -54,6 +54,20 @@ The CFML helpers accept a JSON string, legacy comma-delimited string, or array t
 )>
 ```
 
+To submit stable IDs while displaying human-readable labels, pass value/label items. This form submits `["lib-101","lib-202"]` while rendering the labels:
+
+```cfml
+<cfset controls.renderTagListInputField(
+   fieldName="libraries",
+   fieldValue=[
+      { value="lib-101", label="Bootstrap" },
+      { value="lib-202", label="jQuery" }
+   ]
+)>
+```
+
+Value/label items require JSON storage. Case normalization applies to `label` only; `value` is preserved as the submitted identifier.
+
 ## JavaScript Methods API
 
 Call `tagBuilder()` on the stored `.tagBuilder` input after ready-time initialization. Read methods return data from the first selected field; mutation methods return the jQuery collection and can be chained.
@@ -61,9 +75,10 @@ Call `tagBuilder()` on the stored `.tagBuilder` input after ready-time initializ
 | Method | Argument | Returns | Behavior |
 | --- | --- | --- | --- |
 | `tagBuilder('get')` | None | `string[]` | Returns a copy of the saved values in display order. |
-| `tagBuilder('set', values)` | Array of strings | jQuery collection | Atomically replaces all tags and emits an update with reason `set`. |
-| `tagBuilder('add', value)` | String | jQuery collection | Validates and adds one tag, then emits `add` and `update`. |
-| `tagBuilder('remove', value)` | String | jQuery collection | Removes the matching normalized value, then emits `remove` and `update`. |
+| `tagBuilder('getItems')` | None | `{ value, label }[]` | Returns copies of the stored IDs and rendered labels in display order. |
+| `tagBuilder('set', values)` | Array of strings or items | jQuery collection | Atomically replaces all tags and emits an update with reason `set`. |
+| `tagBuilder('add', value)` | String or item | jQuery collection | Validates and adds one tag, then emits `add` and `update`. |
+| `tagBuilder('remove', value)` | Stored value string | jQuery collection | Removes the tag with the matching ID/value, then emits `remove` and `update`. |
 | `tagBuilder('clear')` | None | jQuery collection | Removes all tags and emits an update with reason `clear`. |
 | `tagBuilder('refresh')` | None | jQuery collection | Rereads `data-fieldvalue`, rerenders, and emits an update with reason `refresh`. |
 | `tagBuilder('config')` | None | Object | Returns a copy of the resolved field configuration. |
@@ -72,6 +87,7 @@ Examples:
 
 ```js
 var values = $('#aliases').tagBuilder('get');
+var items = $('#aliases').tagBuilder('getItems');
 
 $('#aliases')
    .tagBuilder('set', ['one', 'two'])
@@ -80,9 +96,32 @@ $('#aliases')
 
 $('#aliases').attr('data-fieldvalue', '["saved","values"]');
 $('#aliases').tagBuilder('refresh');
+
+$('#libraries').tagBuilder('set', [
+   { value: 'lib-101', label: 'Bootstrap' },
+   { value: 'lib-202', label: 'jQuery' }
+]);
+
+$('#libraries').tagBuilder('add', {
+   value: 'lib-303',
+   label: 'HTML5 Sortable'
+});
 ```
 
-Mutations use the same case normalization, limits, duplicate checks, rendering, and serialization as keyboard input. `set` is atomic: if any supplied value is invalid or duplicated, the existing list is retained and a `tagBuilder:reject` event is emitted. Passing a non-array to `set`, or non-string members within its array, throws a `TypeError`.
+A custom autocomplete can pass its selected record directly to the item API:
+
+```js
+function selectLibrary(result) {
+   $('#libraries').tagBuilder('add', {
+      value: String(result.id),
+      label: result.name
+   });
+}
+```
+
+Mutations use the same case normalization, limits, duplicate checks, rendering, and serialization as keyboard input. For value/label items, identity and duplicate checking use `value`, while the tag area renders `label`. The hidden input and `get()` contain only stored values; `getItems()` returns both properties. Label metadata remains in `data-fieldvalue` so `refresh` can rerender it.
+
+`set` is atomic: if any supplied value is invalid or duplicated, the existing list is retained and a `tagBuilder:reject` event is emitted. Passing an unsupported argument shape throws a `TypeError`.
 
 The `readonly` option disables user-driven add, remove, and sort behavior. It is not an authorization boundary and does not block deliberate calls to the JavaScript methods API.
 
@@ -92,12 +131,12 @@ The builder dispatches native, bubbling `CustomEvent`s on the stored `.tagBuilde
 
 | Event | Fired when | `event.detail` |
 | --- | --- | --- |
-| `tagBuilder:init` | Initialization succeeds | `{ fieldId, values, migrated }` |
-| `tagBuilder:update` | The stored value changes | `{ fieldId, values, previous, reason, serialized }` |
-| `tagBuilder:add` | One tag is accepted | `{ fieldId, value, values }` |
-| `tagBuilder:remove` | One tag is removed | `{ fieldId, value, values }` |
-| `tagBuilder:sort` | Tags are reordered | `{ fieldId, values, previous }` |
-| `tagBuilder:reject` | Input is refused | `{ fieldId, value, reason, message }` |
+| `tagBuilder:init` | Initialization succeeds | `{ fieldId, values, items, migrated }` |
+| `tagBuilder:update` | The stored value changes | `{ fieldId, values, items, previous, previousItems, reason, serialized }` |
+| `tagBuilder:add` | One tag is accepted | `{ fieldId, value, item, values, items }` |
+| `tagBuilder:remove` | One tag is removed | `{ fieldId, value, item, values, items }` |
+| `tagBuilder:sort` | Tags are reordered | `{ fieldId, values, items, previous, previousItems }` |
+| `tagBuilder:reject` | Input is refused | `{ fieldId, value, item, reason, message }` |
 | `tagBuilder:error` | Initialization or refresh parsing fails | `{ fieldId, message }` |
 
 ### Event reasons
@@ -112,7 +151,7 @@ The builder dispatches native, bubbling `CustomEvent`s on the stored `.tagBuilde
 - `clear`: values were cleared through the methods API
 - `refresh`: `data-fieldvalue` was reread through the methods API
 
-`tagBuilder:reject` uses `empty`, `controlCharacters`, `maxTagLength`, `comma`, `maxTags`, or `duplicate`. Its `message` property contains the corresponding human-readable validation message.
+`tagBuilder:reject` uses `empty`, `controlCharacters`, `maxTagLength`, `comma`, `maxTags`, `duplicate`, or `itemFormat`. Its `message` property contains the corresponding human-readable validation message.
 
 ### Event ordering and initialization
 

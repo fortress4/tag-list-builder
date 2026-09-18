@@ -1,6 +1,6 @@
 /*
    tag-list-builder.js
-   v0.3.0
+   v0.3.1
 */
 
 var tags_array = Object.create(null);
@@ -87,7 +87,12 @@ $(function() {
 
    window.setTimeout(function() {
       $.each(tbPendingInitEvents, function(index, pending) {
-         tb_emit(pending.field, 'init', { values: tb_currentValues(pending.field.attr('id')), migrated: pending.migrated });
+         var fieldId = pending.field.attr('id');
+         tb_emit(pending.field, 'init', {
+            values: tb_currentValues(fieldId),
+            items: tb_currentItems(fieldId),
+            migrated: pending.migrated
+         });
          pending.emitUpdate();
       });
       tbPendingInitEvents = [];
@@ -143,6 +148,7 @@ function tb_initializeSortable(field, container) {
 
    sortableContainers[0].addEventListener('sortupdate', function(event) {
       var previousValues = tb_currentValues(fieldId);
+      var previousItems = tb_currentItems(fieldId);
       var reorderedTags = [];
       var items = event.detail.origin.items;
 
@@ -162,8 +168,13 @@ function tb_initializeSortable(field, container) {
       }
 
       tags_array[fieldId] = reorderedTags;
-      tb_emit(field, 'sort', { values: tb_currentValues(fieldId), previous: previousValues });
-      tb_writeStoredValue(field, 'sort', false, previousValues);
+      tb_emit(field, 'sort', {
+         values: tb_currentValues(fieldId),
+         items: tb_currentItems(fieldId),
+         previous: previousValues,
+         previousItems: previousItems
+      });
+      tb_writeStoredValue(field, 'sort', false, previousValues, previousItems);
 
       if (tagBuilderDebug) {
          console.debug('Tag order updated for field:', fieldId);
@@ -201,6 +212,11 @@ $.fn.tagBuilder = function(action, value) {
       return tb_currentValues(firstField.attr('id'));
    }
 
+   if (method === 'getItems') {
+      tb_requireInitialized(firstField);
+      return tb_currentItems(firstField.attr('id'));
+   }
+
    if (method === 'config') {
       tb_requireInitialized(firstField);
       return $.extend({}, tbConfig[firstField.attr('id')]);
@@ -221,7 +237,7 @@ $.fn.tagBuilder = function(action, value) {
          tb_addValue(field, value);
       }
       else if (method === 'remove') {
-         tb_removeTagByKey(field, tb_prepareTag(field, value).key);
+         tb_removeValue(field, value);
       }
       else if (method === 'clear') {
          tb_replaceValues(field, [], 'clear');
@@ -248,26 +264,36 @@ function tb_fieldParts(field) {
 }
 
 function tb_addValue(field, inputValue) {
+   if (!tb_isSupportedInput(inputValue)) {
+      throw new TypeError('tagBuilder add expects a string or { value, label } item.');
+   }
+
    var fieldId = field.attr('id');
    var previousValues = tb_currentValues(fieldId);
+   var previousItems = tb_currentItems(fieldId);
    var preparedTag = tb_prepareTag(field, inputValue);
    var validationError = tb_validatePreparedTag(field, preparedTag, tags_array[fieldId].length);
 
    if (validationError) {
-      tb_reject(field, preparedTag.value, validationError.code, validationError.message);
+      tb_reject(field, preparedTag.value, validationError.code, validationError.message, preparedTag);
       return false;
    }
 
    if (tb_hasDuplicate(fieldId, preparedTag.key)) {
-      tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.');
+      tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.', preparedTag);
       return false;
    }
 
    var parts = tb_fieldParts(field);
    tags_array[fieldId].push(preparedTag);
    tb_renderTag(field, parts.container, preparedTag);
-   tb_emit(field, 'add', { value: preparedTag.value, values: tb_currentValues(fieldId) });
-   tb_writeStoredValue(field, 'add', false, previousValues);
+   tb_emit(field, 'add', {
+      value: preparedTag.value,
+      item: tb_publicItem(preparedTag),
+      values: tb_currentValues(fieldId),
+      items: tb_currentItems(fieldId)
+   });
+   tb_writeStoredValue(field, 'add', false, previousValues, previousItems);
    tb_updateEmptyState(field, parts.container, parts.message);
    tb_refreshSortable(field, parts.container);
    return true;
@@ -284,7 +310,8 @@ function tb_removeTagByKey(field, tagKey) {
    }
 
    var previousValues = tb_currentValues(fieldId);
-   var removedValue = tags_array[fieldId][tagIndex].value;
+   var previousItems = tb_currentItems(fieldId);
+   var removedItem = tb_publicItem(tags_array[fieldId][tagIndex]);
    tags_array[fieldId].splice(tagIndex, 1);
 
    var parts = tb_fieldParts(field);
@@ -292,36 +319,52 @@ function tb_removeTagByKey(field, tagKey) {
       return $(this).data('tag-key') === tagKey;
    }).remove();
 
-   tb_emit(field, 'remove', { value: removedValue, values: tb_currentValues(fieldId) });
-   tb_writeStoredValue(field, 'remove', false, previousValues);
+   tb_emit(field, 'remove', {
+      value: removedItem.value,
+      item: removedItem,
+      values: tb_currentValues(fieldId),
+      items: tb_currentItems(fieldId)
+   });
+   tb_writeStoredValue(field, 'remove', false, previousValues, previousItems);
    tb_updateEmptyState(field, parts.container, parts.message);
    tb_refreshSortable(field, parts.container);
    return true;
 }
 
+function tb_removeValue(field, value) {
+   var fieldId = field.attr('id');
+   var requestedValue = String(value == null ? '' : value).trim();
+   var preparedKey = tb_prepareTag(field, requestedValue).key;
+   var tag = tags_array[fieldId].find(function(candidate) {
+      return candidate.value === requestedValue || candidate.key === preparedKey;
+   });
+
+   return tag ? tb_removeTagByKey(field, tag.key) : false;
+}
+
 function tb_replaceValues(field, values, reason) {
    if (!Array.isArray(values)) {
-      throw new TypeError('tagBuilder set expects an array of string values.');
+      throw new TypeError('tagBuilder set expects an array of strings or { value, label } items.');
    }
 
    var fieldId = field.attr('id');
    var preparedTags = [];
 
    for (var index = 0; index < values.length; index++) {
-      if (typeof values[index] !== 'string') {
-         throw new TypeError('tagBuilder values must be strings.');
+      if (!tb_isSupportedInput(values[index])) {
+         throw new TypeError('tagBuilder values must be strings or { value, label } items.');
       }
 
       var preparedTag = tb_prepareTag(field, values[index]);
       var validationError = tb_validatePreparedTag(field, preparedTag, preparedTags.length);
 
       if (validationError) {
-         tb_reject(field, preparedTag.value, validationError.code, validationError.message);
+         tb_reject(field, preparedTag.value, validationError.code, validationError.message, preparedTag);
          return false;
       }
 
       if (preparedTags.some(function(tag) { return tag.key === preparedTag.key; })) {
-         tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.');
+         tb_reject(field, preparedTag.value, 'duplicate', 'Tag must be unique.', preparedTag);
          return false;
       }
 
@@ -329,6 +372,7 @@ function tb_replaceValues(field, values, reason) {
    }
 
    var previousValues = tb_currentValues(fieldId);
+   var previousItems = tb_currentItems(fieldId);
    var parts = tb_fieldParts(field);
    tags_array[fieldId] = preparedTags;
    parts.container.empty();
@@ -338,7 +382,7 @@ function tb_replaceValues(field, values, reason) {
       tb_renderTag(field, parts.container, tag);
    });
 
-   tb_writeStoredValue(field, reason || 'set', false, previousValues);
+   tb_writeStoredValue(field, reason || 'set', false, previousValues, previousItems);
    tb_updateEmptyState(field, parts.container, parts.message);
    tb_refreshSortable(field, parts.container);
    return true;
@@ -363,30 +407,53 @@ function tb_refreshSortable(field, container) {
 
 function tb_prepareTag(field, inputValue) {
    var fieldId = field.attr('id');
-   var enteredValue = String(inputValue == null ? '' : inputValue).trim();
-   var normalizedValue = tb_applyTagCase(enteredValue, tbConfig[fieldId].tagCase);
+   var isItem = tb_isItemInput(inputValue);
+   var enteredValue = String(isItem && inputValue.value != null ? inputValue.value : (isItem ? '' : inputValue == null ? '' : inputValue)).trim();
+   var enteredLabel = String(isItem && inputValue.label != null ? inputValue.label : enteredValue).trim();
+   var normalizedLabel = tb_applyTagCase(enteredLabel, tbConfig[fieldId].tagCase);
+   var storedValue = isItem
+      ? enteredValue
+      : (tbConfig[fieldId].normalizeStoredCase ? normalizedLabel : enteredValue);
 
    return {
-      value: tbConfig[fieldId].normalizeStoredCase ? normalizedValue : enteredValue,
-      key: normalizedValue,
-      label: normalizedValue
+      value: storedValue,
+      key: isItem ? enteredValue : normalizedLabel,
+      label: normalizedLabel,
+      hasCustomLabel: isItem
    };
+}
+
+function tb_isItemInput(value) {
+   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function tb_isSupportedInput(value) {
+   if (typeof value === 'string') {
+      return true;
+   }
+
+   return tb_isItemInput(value) && typeof value.value === 'string' &&
+      (value.label == null || typeof value.label === 'string');
 }
 
 function tb_validatePreparedTag(field, tag, currentCount) {
    var fieldId = field.attr('id');
    var config = tbConfig[fieldId];
 
-   if (!tag.value.length) {
+   if (!tag.value.length || !tag.label.length) {
       return { code: 'empty', message: 'Please enter a tag.' };
    }
 
-   if (/[\u0000-\u001F\u007F]/.test(tag.value)) {
+   if (/[\u0000-\u001F\u007F]/.test(tag.value) || /[\u0000-\u001F\u007F]/.test(tag.label)) {
       return { code: 'controlCharacters', message: 'Tags cannot contain control characters.' };
    }
 
-   if (tag.value.length > config.maxTagLength) {
+   if (tag.value.length > config.maxTagLength || tag.label.length > config.maxTagLength) {
       return { code: 'maxTagLength', message: 'Tags cannot exceed ' + config.maxTagLength + ' characters.' };
+   }
+
+   if (tag.hasCustomLabel && config.valueFormat === 'comma') {
+      return { code: 'itemFormat', message: 'Value/label items require JSON storage.' };
    }
 
    if (config.valueFormat === 'comma' && tag.value.indexOf(',') !== -1) {
@@ -440,8 +507,8 @@ function tb_parseStoredValues(field) {
    }
 
    parsedValue.forEach(function(value) {
-      if (typeof value !== 'string') {
-         throw new Error('Every saved JSON tag value must be a string.');
+      if (!tb_isSupportedInput(value)) {
+         throw new Error('Every saved JSON tag must be a string or a { value, label } item.');
       }
    });
 
@@ -461,16 +528,34 @@ function tb_serializeStoredValues(field) {
    return JSON.stringify(values);
 }
 
-function tb_writeStoredValue(field, reason, deferEvents, previousOverride) {
+function tb_serializeFieldItems(field) {
+   var fieldId = field.attr('id');
+   var hasCustomLabels = tags_array[fieldId].some(function(tag) {
+      return tag.hasCustomLabel;
+   });
+
+   if (!hasCustomLabels || tbConfig[fieldId].valueFormat === 'comma') {
+      return tb_serializeStoredValues(field);
+   }
+
+   return JSON.stringify(tags_array[fieldId].map(function(tag) {
+      return tag.hasCustomLabel ? tb_publicItem(tag) : tag.value;
+   }));
+}
+
+function tb_writeStoredValue(field, reason, deferEvents, previousOverride, previousItemsOverride) {
    var fieldId = field.attr('id');
    var previous = previousOverride || tb_currentValues(fieldId);
+   var previousItems = previousItemsOverride || tb_currentItems(fieldId);
    var serializedValue = tb_serializeStoredValues(field);
-   field.val(serializedValue).attr('data-fieldvalue', serializedValue);
+   field.val(serializedValue).attr('data-fieldvalue', tb_serializeFieldItems(field));
 
    var emitUpdate = function() {
       tb_emit(field, 'update', {
          values: tb_currentValues(fieldId),
+         items: tb_currentItems(fieldId),
          previous: previous,
+         previousItems: previousItems,
          reason: reason || 'set',
          serialized: serializedValue
       });
@@ -544,6 +629,14 @@ function tb_currentValues(fieldId) {
    return (tags_array[fieldId] || []).map(function(tag) { return tag.value; });
 }
 
+function tb_currentItems(fieldId) {
+   return (tags_array[fieldId] || []).map(tb_publicItem);
+}
+
+function tb_publicItem(tag) {
+   return { value: tag.value, label: tag.label };
+}
+
 function tb_emit(field, name, detail) {
    var element = field && field[0];
    if (!element || typeof window.CustomEvent !== 'function') {
@@ -589,8 +682,12 @@ function tb_isLegacyStoredValue(field) {
    }
 }
 
-function tb_reject(field, value, reason, message) {
-   tb_emit(field, 'reject', { value: value, reason: reason, message: message });
+function tb_reject(field, value, reason, message, tag) {
+   var detail = { value: value, reason: reason, message: message };
+   if (tag) {
+      detail.item = tb_publicItem(tag);
+   }
+   tb_emit(field, 'reject', detail);
    tb_alert(message);
 }
 

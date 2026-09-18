@@ -270,8 +270,8 @@
                 <div class="card-body">
                    <h5 class="card-title">JavaScript-loaded Values and Events</h5>
                    <p class="card-text text-muted">
-                      This field starts empty. Its initial tags are added with <code>tagBuilder('set', values)</code>
-                      after initialization, and the indicator shows each public event as it fires.
+                      This field starts empty. Its initial ID/label items are added with <code>tagBuilder('set', items)</code>
+                      after initialization. The labels are displayed while the hidden field stores only IDs.
                    </p>
 
                    <cfscript>
@@ -310,6 +310,52 @@
                 </div>
              </div>
           </div>
+      </div>
+
+      <!--- // ROW 4 --->
+      <div class="row">
+         <div class="col-12">
+            <div class="card border border-2 rounded-3 m-2 p-4">
+               <div class="card-body">
+                  <h5 class="card-title">Server-rendered ID and Label Values</h5>
+                  <p class="card-text text-muted">
+                     These tags are supplied as <code>{ value, label }</code> structs through the CFML
+                     <code>fieldValue</code> argument. Submitted values contain only the IDs.
+                  </p>
+
+                  <cfscript>
+                     fieldArgs = {
+                        fieldName = "exampleSix",
+                        fieldLabel = "Server-rendered Items",
+                        required = false,
+                        readonly = false,
+                        placeholder = "Add a Tag",
+                        fieldValue = [
+                           { value = "pkg-101", label = "Bootstrap" },
+                           { value = "pkg-202", label = "jQuery" },
+                           { value = "pkg-303", label = "HTML5 Sortable" }
+                        ],
+                        enableTagSorting = true,
+                        tagCase = "",
+                        tagClass = "bg-secondary",
+                        tagHoverClass = "bg-warning",
+                        addFieldClass = "",
+                        messageText = "No items loaded",
+                        showHiddenButton = true,
+                        outputConfig = true
+                     };
+                  </cfscript>
+                  <cfoutput>#controlsCFC.renderTagListInputField(argumentCollection=fieldArgs)#</cfoutput>
+
+                  <div id="exampleSix_events" class="mt-3 small tagBuilderEventIndicator" aria-live="polite">
+                     <span class="text-muted">Last event:</span>
+                     <span class="badge bg-secondary" data-event-name>Waiting</span>
+                     <span class="ms-2 text-muted" data-event-count>0 events</span>
+                     <code class="d-block mt-1 text-break" data-event-detail>No events fired yet.</code>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
 
       <!---<div class="row marketing">
@@ -430,7 +476,11 @@
     <script>
       $(function() {
          window.setTimeout(function() {
-            $('#exampleFive').tagBuilder('set', ['Loaded by JavaScript', 'Event hooks', 'Version 0.3.0']);
+            $('#exampleFive').tagBuilder('set', [
+               { value: 'js-101', label: 'Loaded by JavaScript' },
+               { value: 'js-202', label: 'Event hooks' },
+               { value: 'js-303', label: 'Version 0.3.1' }
+            ]);
          }, 0);
 
          $('[data-example-five-action]').on('click', function() {
@@ -438,13 +488,21 @@
             var action = $(this).attr('data-example-five-action');
 
             if (action === 'set') {
-               field.tagBuilder('set', ['Loaded by JavaScript', 'Saved values', 'Rendered tags']);
+               field.tagBuilder('set', [
+                  { value: 'js-101', label: 'Loaded by JavaScript' },
+                  { value: 'js-202', label: 'Saved ID values' },
+                  { value: 'js-303', label: 'Rendered label text' }
+               ]);
             }
             else if (action === 'add') {
-               field.tagBuilder('add', 'Added at ' + new Date().toLocaleTimeString());
+               var timestamp = String(Date.now());
+               field.tagBuilder('add', { value: 'js-' + timestamp, label: 'Added at ' + new Date().toLocaleTimeString() });
             }
             else if (action === 'refresh') {
-               field.attr('data-fieldvalue', JSON.stringify(['Refreshed value', 'From data-fieldvalue']));
+               field.attr('data-fieldvalue', JSON.stringify([
+                  { value: 'refresh-101', label: 'Refreshed label' },
+                  { value: 'refresh-202', label: 'From data-fieldvalue' }
+               ]));
                field.tagBuilder('refresh');
             }
             else if (action === 'clear') {

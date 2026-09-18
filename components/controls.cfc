@@ -59,6 +59,7 @@
          }
 
          var serializedFieldValue = serializeTagFieldValue(arguments.fieldValue, arguments.valueFormat);
+         var serializedFieldItems = serializeTagFieldItems(arguments.fieldValue, arguments.valueFormat);
          var encodedFieldName = EncodeForHTMLAttribute(arguments.fieldName);
          var encodedFieldID = EncodeForHTMLAttribute(arguments.fieldID);
          var encodedFieldClass = EncodeForHTMLAttribute(arguments.fieldClass);
@@ -66,6 +67,7 @@
          var encodedAddFieldClass = EncodeForHTMLAttribute(arguments.addFieldClass);
          var encodedPlaceholder = EncodeForHTMLAttribute(arguments.placeholder);
          var encodedFieldValue = EncodeForHTMLAttribute(serializedFieldValue);
+         var encodedFieldItems = EncodeForHTMLAttribute(serializedFieldItems);
          var encodedTagCase = EncodeForHTMLAttribute(arguments.tagCase);
          var encodedValueFormat = EncodeForHTMLAttribute(arguments.valueFormat);
          var encodedTagClass = EncodeForHTMLAttribute(arguments.tagClass);
@@ -82,7 +84,7 @@
          <div id="#encodedFieldID#_msg" class="tagBuilderMsg">#encodedMessageText#</div>
          <div id="#encodedFieldID#_bin" class="tagBuilderBin"></div>
          <input type="hidden" id="#encodedFieldID#" name="#encodedFieldName#" class="tagBuilder" value="#encodedFieldValue#"
-            data-fieldvalue="#encodedFieldValue#"
+            data-fieldvalue="#encodedFieldItems#"
             data-required="#req#"
             data-readonly="#readonlyValue#"
             data-autocomplete="0"
@@ -165,6 +167,7 @@
          }
 
          var serializedFieldValue = serializeTagFieldValue(arguments.fieldValue, arguments.valueFormat);
+         var serializedFieldItems = serializeTagFieldItems(arguments.fieldValue, arguments.valueFormat);
          var encodedFieldName = EncodeForHTMLAttribute(arguments.fieldName);
          var encodedFieldID = EncodeForHTMLAttribute(arguments.fieldID);
          var encodedFieldClass = EncodeForHTMLAttribute(arguments.fieldClass);
@@ -172,6 +175,7 @@
          var encodedAddFieldClass = EncodeForHTMLAttribute(arguments.addFieldClass);
          var encodedPlaceholder = EncodeForHTMLAttribute(arguments.placeholder);
          var encodedFieldValue = EncodeForHTMLAttribute(serializedFieldValue);
+         var encodedFieldItems = EncodeForHTMLAttribute(serializedFieldItems);
          var encodedTagCase = EncodeForHTMLAttribute(arguments.tagCase);
          var encodedValueFormat = EncodeForHTMLAttribute(arguments.valueFormat);
          var encodedTagClass = EncodeForHTMLAttribute(arguments.tagClass);
@@ -194,7 +198,7 @@
          <div id="#encodedFieldID#_msg" class="tagBuilderMsg">#encodedMessageText#</div>
          <div id="#encodedFieldID#_bin" class="tagBuilderBin"></div>
          <input type="hidden" id="#encodedFieldID#" name="#encodedFieldName#" class="tagBuilder" value="#encodedFieldValue#"
-            data-fieldvalue="#encodedFieldValue#"
+            data-fieldvalue="#encodedFieldItems#"
             data-required="#req#"
             data-readonly="#readonlyValue#"
             data-autocomplete="#autocompleteValue#"
@@ -303,49 +307,103 @@
       <cfargument name="valueFormat" type="string" required="true">
 
       <cfscript>
+         var items = parseTagFieldItems(arguments.fieldValue, arguments.valueFormat);
          var values = [];
+         var item = '';
+
+         for (item in items)
+            ArrayAppend(values, item.value);
+
+         return arguments.valueFormat == 'json' ? SerializeJSON(values) : ArrayToList(values);
+      </cfscript>
+   </cffunction>
+
+   <cffunction name="serializeTagFieldItems" access="private" output="no" returntype="string">
+      <cfargument name="fieldValue" type="any" required="true">
+      <cfargument name="valueFormat" type="string" required="true">
+
+      <cfscript>
+         var items = parseTagFieldItems(arguments.fieldValue, arguments.valueFormat);
+         var serializedItems = [];
+         var values = [];
+         var item = '';
+
+         for (item in items) {
+            ArrayAppend(values, item.value);
+            if (item.hasCustomLabel)
+               ArrayAppend(serializedItems, { "value"=item.value, "label"=item.label });
+            else
+               ArrayAppend(serializedItems, item.value);
+         }
+
+         return arguments.valueFormat == 'json' ? SerializeJSON(serializedItems) : ArrayToList(values);
+      </cfscript>
+   </cffunction>
+
+   <cffunction name="parseTagFieldItems" access="private" output="no" returntype="array">
+      <cfargument name="fieldValue" type="any" required="true">
+      <cfargument name="valueFormat" type="string" required="true">
+
+      <cfscript>
+         var sourceItems = [];
+         var items = [];
          var rawValue = '';
          var parsedValue = '';
          var item = '';
+         var itemValue = '';
+         var itemLabel = '';
 
          if (IsArray(arguments.fieldValue)) {
-            for (item in arguments.fieldValue) {
+            sourceItems = arguments.fieldValue;
+         }
+         else {
+            if (!IsSimpleValue(arguments.fieldValue))
+               throw(type='TagListBuilder.InvalidFieldValue', message='fieldValue must be an array or serialized string.');
+
+            rawValue = Trim(ToString(arguments.fieldValue));
+
+            if (!Len(rawValue))
+               return items;
+
+            if (arguments.valueFormat == 'comma') {
+               sourceItems = ListToArray(rawValue);
+            }
+            else if (IsJSON(rawValue)) {
+               parsedValue = DeserializeJSON(rawValue);
+               if (!IsArray(parsedValue))
+                  throw(type='TagListBuilder.InvalidFieldValue', message='JSON fieldValue must be an array.');
+               sourceItems = parsedValue;
+            }
+            else {
+               sourceItems = ListToArray(rawValue);
+            }
+         }
+
+         for (item in sourceItems) {
+            if (IsStruct(item)) {
+               if (arguments.valueFormat == 'comma')
+                  throw(type='TagListBuilder.InvalidFieldValue', message='Value/label tag items require JSON storage.');
+               if (!StructKeyExists(item, 'value') || !IsSimpleValue(item.value))
+                  throw(type='TagListBuilder.InvalidFieldValue', message='Every tag item requires a simple value.');
+               if (StructKeyExists(item, 'label') && !IsSimpleValue(item.label))
+                  throw(type='TagListBuilder.InvalidFieldValue', message='Every tag item label must be a simple value.');
+
+               itemValue = ToString(item.value);
+               itemLabel = StructKeyExists(item, 'label') ? ToString(item.label) : itemValue;
+               ArrayAppend(items, { value=itemValue, label=itemLabel, hasCustomLabel=true });
+            }
+            else {
                if (!IsSimpleValue(item))
-                  throw(type='TagListBuilder.InvalidFieldValue', message='Every tag value must be a simple value.');
-               if (arguments.valueFormat == 'comma' && Find(',', ToString(item)))
+                  throw(type='TagListBuilder.InvalidFieldValue', message='Every tag value must be a string or value/label item.');
+
+               itemValue = ToString(item);
+               if (arguments.valueFormat == 'comma' && Find(',', itemValue))
                   throw(type='TagListBuilder.InvalidFieldValue', message='Tag values cannot contain commas when comma storage is enabled.');
-               ArrayAppend(values, ToString(item));
+               ArrayAppend(items, { value=itemValue, label=itemValue, hasCustomLabel=false });
             }
-
-            return arguments.valueFormat == 'json' ? SerializeJSON(values) : ArrayToList(values);
          }
 
-         if (!IsSimpleValue(arguments.fieldValue))
-            throw(type='TagListBuilder.InvalidFieldValue', message='fieldValue must be an array or serialized string.');
-
-         rawValue = Trim(ToString(arguments.fieldValue));
-
-         if (!Len(rawValue))
-            return arguments.valueFormat == 'json' ? SerializeJSON([]) : '';
-
-         if (arguments.valueFormat == 'comma')
-            return rawValue;
-
-         if (IsJSON(rawValue)) {
-            parsedValue = DeserializeJSON(rawValue);
-            if (!IsArray(parsedValue))
-               throw(type='TagListBuilder.InvalidFieldValue', message='JSON fieldValue must be an array.');
-
-            for (item in parsedValue) {
-               if (!IsSimpleValue(item))
-                  throw(type='TagListBuilder.InvalidFieldValue', message='Every JSON tag value must be a simple value.');
-               ArrayAppend(values, ToString(item));
-            }
-
-            return SerializeJSON(values);
-         }
-
-         return SerializeJSON(ListToArray(rawValue));
+         return items;
       </cfscript>
    </cffunction>
 
