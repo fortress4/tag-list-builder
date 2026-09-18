@@ -13,6 +13,8 @@ Dependencies:
 
 ** jQuery Typeahead Search is only required when using the typeahead option.
 
+ColdFusion/CFML is not required to use the tag-list builder. The component runs in a normal HTML page using the browser dependencies listed above; `index.html` is the standalone example. Copy the required CSS and JavaScript assets and use the same HTML/data-attribute contract in any server-side framework or static site.
+
 View the [Demo](https://fortress4.github.io/tag-list-builder/) page.
 
 Warning: This is a work in progress.
@@ -29,9 +31,11 @@ JSON mode accepts an existing legacy comma-separated value once and immediately 
 
 Case normalization is always applied before duplicate checking. `normalizeStoredCase` defaults to `false`, so entered casing is preserved in the saved value. Set it to `true` to save the normalized casing shown by `tagCase`.
 
-## ColdFusion requirements
+## CFML Development Tools
 
-The reusable helpers use `EncodeForHTML` and `EncodeForHTMLAttribute`. Supported runtimes are Adobe ColdFusion 10+ and Lucee 5+ with its ESAPI/ESAPI Encoder support available.
+CFML is used only to develop the example layout. `index.cfm` uses `components/controls.cfc` to render the demo controls, while `index.html` provides the standalone HTML version.
+
+These tools are optional and are not a runtime dependency of the JavaScript tag-list builder. If you use or modify the CFML development tools, they require Adobe ColdFusion 10+ or Lucee 5+ with ESAPI/ESAPI Encoder support because the helpers use `EncodeForHTML` and `EncodeForHTMLAttribute`.
 
 ## Options
 

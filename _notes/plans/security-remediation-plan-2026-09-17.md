@@ -32,7 +32,6 @@ Styles may be updated if validation messages or CSP-compatible placeholder styli
 
 - treating typeahead suggestions as an authorization or validation boundary;
 - adding application-specific server persistence or authorization logic to this UI library;
-- modifying the developer-only `utils/_make-static.cfm` build tool;
 - completing the separate Vanilla JavaScript implementation plan;
 - upgrading every dependency in the same change as the critical output-encoding fix.
 

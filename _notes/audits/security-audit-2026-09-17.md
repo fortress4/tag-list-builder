@@ -30,7 +30,6 @@ Reviewed:
 - `js/tag-list-builder-typeahead.js`
 - corresponding files under `dist/`
 - `index.cfm` and `index.html`
-- `utils/_make-static.cfm` as an out-of-scope developer tool, checked only for deployment-boundary concerns
 - CDN dependency declarations
 - repository history relevant to the earlier tag-rendering XSS finding
 
@@ -73,37 +72,6 @@ This happens while the browser parses the server-generated HTML, before the safe
 - Validate IDs and names against a conservative identifier pattern.
 - Allowlist supported CSS classes and `tagCase` values instead of accepting arbitrary strings.
 - Add tests using quotes, angle brackets, ampersands, and event-handler payloads in every public string argument.
-
-## Out-of-Scope Developer Tool Note
-
-### Informational: Keep the static-generation utility outside production deployments
-
-**Evidence:** `utils/_make-static.cfm:9-13`, `utils/_make-static.cfm:43-66`.
-
-`utils/_make-static.cfm` is a developer-only build tool and is not part of the production `tag_list_builder` library. Its behavior is therefore not counted as a production-library security finding.
-
-The utility enables file generation using query-string parameters. It constructs a server-side HTTP URL using `cgi.http_host`, performs the request with `cfhttp`, and writes the response into files in the utility directory.
-
-If accessible, an attacker may be able to:
-
-- trigger the operation with `?make=1`;
-- influence the `cfhttp` destination through the HTTP `Host` header;
-- overwrite `index.html` and `main.html`;
-- cause repeated timestamped backups and consume storage;
-- trigger the operation cross-site because it uses an unprotected GET request.
-
-The file is ignored and not tracked by Git. The observations above matter only if a deployment process accidentally copies the developer workspace or utility directory to an accessible ColdFusion server.
-
-**Remediation:**
-
-- Exclude the entire `utils` development area from production deployments.
-- If the utility must exist on a server, require administrative authentication and authorization.
-- Use POST with CSRF protection for state-changing operations.
-- Replace `cgi.http_host` with a fixed, allowlisted origin.
-- Resolve and validate output paths before writing.
-- Add request rate limits and bounded backup retention.
-
-## Production Findings (continued)
 
 ### Medium: `readonly` and `validateTags` are not enforced
 
